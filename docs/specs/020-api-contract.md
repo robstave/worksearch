@@ -7,10 +7,12 @@ All timestamps are ISO-8601 strings.
 
 ## Shared Types
 
-### State:
+### State
+
 INTERESTED | APPLIED | SCREENING | INTERVIEW | REJECTED | GHOSTED | TRASH
 
-### Role:
+### Role
+
 admin | user
 
 Error format:
@@ -48,13 +50,13 @@ Response 200:
 }
 
 ## Users (admin only)
+
 POST /users
 
 Creates a user (admin action).
 Request:
 
 { "email": "string", "password": "string", "role": "admin|user" }
-
 
 Response 201:
 
@@ -66,14 +68,13 @@ Response 200:
 
 { "items": [ { "id": "string", "email": "string", "role": "admin|user" } ] }
 
-
-
 ## Companies
 
 GET /companies
 Query:
+
 - search (optional)
-- tag (optional)
+- tag (optional, company tag name)
 
 Response 200:
 {
@@ -124,9 +125,22 @@ Response 200:
   "updatedAt": "string"
 }
 
+PATCH /companies/:id
 
+Request (any subset):
+{
+  "name": "string",
+  "website": "string|null"
+}
+
+Response 200: updated Company summary
+
+DELETE /companies/:id
+
+Response 204
 
 ## Applications
+
 GET /applications
 
 Query params (optional):
@@ -176,7 +190,6 @@ Request:
   "jobDescriptionMd": "string",
   "initialState": "INTERESTED|APPLIED"
 }
-
 
 Response 201:
 
@@ -235,7 +248,6 @@ Request (any subset):
   "jobDescriptionMd": "string"
 }
 
-
 Response 200: updated Application summary
 
 POST /applications/:id/move
@@ -246,7 +258,6 @@ Request:
 
 { "toState": "STATE", "note": "string|null" }
 
-
 Response 200:
 
 {
@@ -255,74 +266,19 @@ Response 200:
   "toState": "STATE",
   "transitionedAt": "string"
 }
-
 
 Error 409 if transition is not allowed.
 
-## Applications
+## Application Tags
 
-GET /applications
-Query:
-- state
-- companyId
-- tag
-- search
-
-Response 200:
-{
-  "items": [
-    {
-      "id": "string",
-      "company": { "id": "string", "name": "string" },
-      "jobTitle": "string",
-      "currentState": "STATE",
-      "tags": ["string"],
-      "lastTransitionAt": "string|null"
-    }
-  ]
-}
-
-POST /applications
-Request:
-{
-  "companyId": "string",
-  "jobTitle": "string",
-  "jobDescriptionMd": "string",
-  "initialState": "INTERESTED|APPLIED"
-}
-
-POST /applications/:id/move
-Request:
-{
-  "toState": "STATE",
-  "note": "string|null"
-}
-
-Response 200:
-{
-  "applicationId": "string",
-  "fromState": "STATE",
-  "toState": "STATE",
-  "transitionedAt": "string"
-}
-
-
-7) Application Tags
 GET /application-tags
-
 Response 200:
-
 { "items": [ { "id": "string", "name": "string" } ] }
 
 POST /application-tags
-
 Request:
-
 { "name": "string" }
-
-
 Response 201:
-
 { "id": "string", "name": "string" }
 
 PUT /applications/:id/tags
@@ -330,21 +286,40 @@ PUT /applications/:id/tags
 Replaces the full tag set for the application (idempotent).
 
 Request:
-
 { "tagNames": ["string"] }
 
-
 Response 200:
-
 { "applicationId": "string", "tagNames": ["string"] }
 
-8) Application Events (Important Dates)
+## Company Tags
+
+GET /company-tags
+Response 200:
+{ "items": [ { "id": "string", "name": "string" } ] }
+
+POST /company-tags
+Request:
+{ "name": "string" }
+Response 201:
+{ "id": "string", "name": "string" }
+
+PUT /companies/:id/tags
+
+Replaces the full tag set for the company (idempotent).
+
+Request:
+{ "tagNames": ["string"] }
+
+Response 200:
+{ "companyId": "string", "tagNames": ["string"] }
+
+## Application Events (Important Dates)
+
 POST /applications/:id/events
 
 Request:
 
 { "type": "INTERVIEW|FOLLOWUP|CALL|DEADLINE|OTHER", "at": "string", "note": "string|null" }
-
 
 Response 201:
 
@@ -353,7 +328,6 @@ Response 201:
 DELETE /events/:id
 
 Response 204
-
 
 ## Dashboard
 
@@ -372,8 +346,35 @@ Response 200:
 }
 
 GET /dashboard/sankey
+Notes:
+
+- v0 decision: Sankey is computed for **all time** (no date range query params).
+- Future: add a boolean to exclude items from Sankey/analytics (e.g. `Application.excludeFromAnalytics` or similar).
+
 Response 200:
 {
   "nodes": [],
   "links": []
+}
+
+GET /dashboard/important-dates
+
+Notes:
+
+- v0: returns upcoming events for the next 14 days.
+- Future: add query params for date range (e.g. `from`, `to`).
+
+Response 200:
+{
+  "items": [
+    {
+      "id": "string",
+      "applicationId": "string",
+      "type": "INTERVIEW|FOLLOWUP|CALL|DEADLINE|OTHER",
+      "at": "string",
+      "note": "string|null",
+      "company": { "id": "string", "name": "string" },
+      "jobTitle": "string"
+    }
+  ]
 }

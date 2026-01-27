@@ -4,6 +4,7 @@ import { useAuth } from './auth';
 const NAV_ITEMS = [
   { path: '/applications/board', label: 'Board' },
   { path: '/applications/list', label: 'List' },
+  { path: '/analytics/sankey', label: 'Analytics' },
   { path: '/companies', label: 'Companies' },
   { path: '/job-boards', label: 'Job Boards' },
 ];

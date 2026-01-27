@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { companiesApi } from '../api';
 import type { Company } from '../api';
 
 export function CompaniesPage() {
+  const navigate = useNavigate();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -130,12 +132,20 @@ export function CompaniesPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-300">{company.applicationCount}</td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleDelete(company.id)}
-                      className="text-red-400 hover:text-red-300 text-sm"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex gap-3 justify-end">
+                      <button
+                        onClick={() => navigate('/applications/new', { state: { companyId: company.id, companyName: company.name } })}
+                        className="text-blue-400 hover:text-blue-300 text-sm"
+                      >
+                        Apply
+                      </button>
+                      <button
+                        onClick={() => handleDelete(company.id)}
+                        className="text-red-400 hover:text-red-300 text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

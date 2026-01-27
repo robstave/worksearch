@@ -84,6 +84,8 @@ export type AppState =
   | 'APPLIED'
   | 'SCREENING'
   | 'INTERVIEW'
+  | 'OFFER'
+  | 'ACCEPTED'
   | 'REJECTED'
   | 'GHOSTED'
   | 'TRASH';
@@ -147,6 +149,10 @@ export const applicationsApi = {
       { method: 'POST', body: JSON.stringify({ toState, note }) }
     ),
   delete: (id: string) => request<void>(`/applications/${id}`, { method: 'DELETE' }),
+  getSankeyData: () => request<{
+    nodes: Array<{ name: string }>;
+    links: Array<{ source: number; target: number; value: number }>;
+  }>('/applications/analytics/sankey'),
 };
 
 // Job Boards

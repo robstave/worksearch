@@ -8,6 +8,7 @@ import { CompaniesPage } from './pages/CompaniesPage';
 import { ApplicationPage } from './pages/ApplicationPage';
 import { JobBoardsPage } from './pages/JobBoardsPage';
 import { JobBoardPage } from './pages/JobBoardPage';
+import { SankeyPage } from './pages/SankeyPage';
 import './App.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
             <Route path="/applications/board" element={<BoardPage />} />
             <Route path="/applications/list" element={<ListPage />} />
             <Route path="/applications/:id" element={<ApplicationPage />} />
+            <Route path="/analytics/sankey" element={<SankeyPage />} />
             <Route path="/companies" element={<CompaniesPage />} />
             <Route path="/job-boards" element={<JobBoardsPage />} />
             <Route path="/job-boards/:id" element={<JobBoardPage />} />

@@ -8,6 +8,8 @@ const STATE_COLORS: Record<AppState, string> = {
   APPLIED: 'bg-yellow-500',
   SCREENING: 'bg-purple-500',
   INTERVIEW: 'bg-green-500',
+  OFFER: 'bg-emerald-500',
+  ACCEPTED: 'bg-teal-500',
   REJECTED: 'bg-red-500',
   GHOSTED: 'bg-gray-500',
   TRASH: 'bg-gray-700',
@@ -85,6 +87,8 @@ export function ListPage() {
           <option value="APPLIED">Applied</option>
           <option value="SCREENING">Screening</option>
           <option value="INTERVIEW">Interview</option>
+          <option value="OFFER">Offer</option>
+          <option value="ACCEPTED">Accepted</option>
           <option value="REJECTED">Rejected</option>
           <option value="GHOSTED">Ghosted</option>
           <option value="TRASH">Trash</option>

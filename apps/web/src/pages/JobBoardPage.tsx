@@ -58,13 +58,12 @@ export function JobBoardPage() {
         });
         navigate('/job-boards');
       } else if (id) {
-        const updated = await jobBoardsApi.update(id, {
+        await jobBoardsApi.update(id, {
           name: name.trim(),
           link: link.trim() || undefined,
           notesMd,
         });
-        setJobBoard(updated);
-        setIsNotesEditing(false);
+        navigate('/job-boards');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');

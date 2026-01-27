@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { applicationsApi, companiesApi } from '../api';
 import type { Application, AppState, Company } from '../api';
@@ -9,6 +9,8 @@ const STATE_COLORS: Record<AppState, string> = {
   APPLIED: 'bg-yellow-500',
   SCREENING: 'bg-purple-500',
   INTERVIEW: 'bg-green-500',
+  OFFER: 'bg-emerald-500',
+  ACCEPTED: 'bg-teal-500',
   REJECTED: 'bg-red-500',
   GHOSTED: 'bg-gray-500',
   TRASH: 'bg-gray-700',
@@ -18,7 +20,9 @@ const ALLOWED_TRANSITIONS: Record<AppState, AppState[]> = {
   INTERESTED: ['APPLIED', 'TRASH'],
   APPLIED: ['SCREENING', 'REJECTED', 'GHOSTED', 'TRASH'],
   SCREENING: ['INTERVIEW', 'REJECTED', 'GHOSTED', 'TRASH'],
-  INTERVIEW: ['REJECTED', 'GHOSTED', 'TRASH'],
+  INTERVIEW: ['OFFER', 'REJECTED', 'GHOSTED', 'TRASH'],
+  OFFER: ['ACCEPTED', 'REJECTED', 'GHOSTED'],
+  ACCEPTED: [],
   REJECTED: [],
   GHOSTED: [],
   TRASH: [],
@@ -27,6 +31,7 @@ const ALLOWED_TRANSITIONS: Record<AppState, AppState[]> = {
 export function ApplicationPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const isNew = id === 'new';
 
   const [application, setApplication] = useState<Application | null>(null);
@@ -58,6 +63,12 @@ export function ApplicationPage() {
           setJobReqUrl(app.jobReqUrl || '');
           setDescription(app.jobDescriptionMd || '');
           setTags(app.tags);
+        } else if (isNew) {
+          // Check if company was pre-filled from navigation state
+          const state = location.state as { companyId?: string; companyName?: string } | null;
+          if (state?.companyId) {
+            setCompanyId(state.companyId);
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -120,10 +131,7 @@ export function ApplicationPage() {
           jobDescriptionMd: description,
           tags,
         });
-        // Reload to get fresh data
-        const updated = await applicationsApi.get(id);
-        setApplication(updated);
-        setIsDescriptionEditing(false);
+        navigate('/applications/list');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');

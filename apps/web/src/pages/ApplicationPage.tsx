@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import { applicationsApi, companiesApi } from '../api';
 import type { Application, AppState, Company } from '../api';
 
@@ -38,6 +39,8 @@ export function ApplicationPage() {
   const [companyId, setCompanyId] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [jobReqUrl, setJobReqUrl] = useState('');
+  const [description, setDescription] = useState('');
+  const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
 
@@ -53,6 +56,7 @@ export function ApplicationPage() {
           setCompanyId(app.company.id);
           setJobTitle(app.jobTitle);
           setJobReqUrl(app.jobReqUrl || '');
+          setDescription(app.jobDescriptionMd || '');
           setTags(app.tags);
         }
       } catch (err) {
@@ -108,16 +112,18 @@ export function ApplicationPage() {
         if (tags.length > 0) {
           await applicationsApi.update(newApp.id, { tags });
         }
-        navigate(`/applications/${newApp.id}`);
+        navigate('/applications/list');
       } else if (id) {
         await applicationsApi.update(id, {
           jobTitle: jobTitle.trim(),
           jobReqUrl: jobReqUrl.trim() || undefined,
+          jobDescriptionMd: description,
           tags,
         });
         // Reload to get fresh data
         const updated = await applicationsApi.get(id);
         setApplication(updated);
+        setIsDescriptionEditing(false);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
@@ -166,7 +172,7 @@ export function ApplicationPage() {
   const allowedMoves = application ? ALLOWED_TRANSITIONS[application.currentState] : [];
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div>
       {/* Breadcrumb */}
       <div className="mb-6">
         <Link to="/applications/board" className="text-blue-400 hover:underline text-sm">
@@ -191,11 +197,18 @@ export function ApplicationPage() {
               {isNew ? 'New Application' : application?.company.name}
             </h1>
             {!isNew && application && (
-              <span
-                className={`inline-block mt-2 px-2 py-1 rounded text-xs font-medium text-white ${STATE_COLORS[application.currentState]}`}
-              >
-                {application.currentState}
-              </span>
+              <div className="flex items-center gap-3 mt-2">
+                <span
+                  className={`inline-block px-2 py-1 rounded text-xs font-medium text-white ${STATE_COLORS[application.currentState]}`}
+                >
+                  {application.currentState}
+                </span>
+                {application.appliedAt && (
+                  <span className="text-sm text-gray-400">
+                    Applied {new Date(application.appliedAt).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
             )}
           </div>
           {!isNew && application?.jobReqUrl && (
@@ -306,6 +319,41 @@ export function ApplicationPage() {
                 Add
               </button>
             </div>
+          </div>
+
+          {/* Description / Notes */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-300">
+                Description / Notes
+              </label>
+              {!isNew && (
+                <button
+                  type="button"
+                  onClick={() => setIsDescriptionEditing(!isDescriptionEditing)}
+                  className="text-sm text-blue-400 hover:text-blue-300"
+                >
+                  {isDescriptionEditing ? 'Preview' : 'Edit'}
+                </button>
+              )}
+            </div>
+            {isNew || isDescriptionEditing ? (
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={10}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                placeholder="Add notes, job description, requirements... (Markdown supported)"
+              />
+            ) : (
+              <div className="min-h-[200px] p-4 bg-gray-700/50 border border-gray-600 rounded-md prose prose-invert prose-sm max-w-none text-left">
+                {description ? (
+                  <ReactMarkdown>{description}</ReactMarkdown>
+                ) : (
+                  <p className="text-gray-500 italic">No description yet. Click Edit to add one.</p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* State transitions (only for existing) */}

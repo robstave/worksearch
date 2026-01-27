@@ -96,6 +96,7 @@ export interface Application {
   currentState: AppState;
   tags: string[];
   lastTransitionAt: string | null;
+  appliedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

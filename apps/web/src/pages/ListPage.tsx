@@ -51,12 +51,20 @@ export function ListPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-white">Applications List</h1>
-        <Link
-          to="/applications/board"
-          className="text-blue-400 hover:underline text-sm"
-        >
-          Switch to Board View →
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            to="/applications/new"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+          >
+            + Add Application
+          </Link>
+          <Link
+            to="/applications/board"
+            className="text-blue-400 hover:underline text-sm"
+          >
+            Switch to Board View →
+          </Link>
+        </div>
       </div>
 
       <div className="flex gap-4 mb-6">
@@ -98,13 +106,14 @@ export function ListPage() {
         </div>
       ) : (
         <div className="bg-gray-800 rounded-lg overflow-hidden">
-          <table className="w-full">
+          <table className="w-full table-fixed">
             <thead className="bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Company</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Job Title</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">State</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Updated</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/5">Company</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-2/5">Job Title</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">State</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">Applied</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">Updated</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
@@ -114,16 +123,19 @@ export function ListPage() {
                   onClick={() => navigate(`/applications/${app.id}`)}
                   className="hover:bg-gray-700 cursor-pointer"
                 >
-                  <td className="px-4 py-3 text-white font-medium">{app.company.name}</td>
-                  <td className="px-4 py-3 text-gray-300">{app.jobTitle}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-left text-white font-medium">{app.company.name}</td>
+                  <td className="px-4 py-3 text-left text-gray-300">{app.jobTitle}</td>
+                  <td className="px-4 py-3 text-left">
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${STATE_COLORS[app.currentState]}`}
                     >
                       {app.currentState}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-400 text-sm">
+                  <td className="px-4 py-3 text-left text-gray-400 text-sm">
+                    {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-left text-gray-400 text-sm">
                     {new Date(app.updatedAt).toLocaleDateString()}
                   </td>
                 </tr>

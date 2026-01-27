@@ -5,6 +5,7 @@ import { LoginPage } from './pages/LoginPage';
 import { BoardPage } from './pages/BoardPage';
 import { ListPage } from './pages/ListPage';
 import { CompaniesPage } from './pages/CompaniesPage';
+import { ApplicationPage } from './pages/ApplicationPage';
 import './App.css';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/applications/board" element={<BoardPage />} />
             <Route path="/applications/list" element={<ListPage />} />
+            <Route path="/applications/:id" element={<ApplicationPage />} />
             <Route path="/companies" element={<CompaniesPage />} />
             <Route path="/" element={<Navigate to="/applications/board" replace />} />
           </Route>

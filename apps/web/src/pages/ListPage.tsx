@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { applicationsApi } from '../api';
 import type { Application, AppState } from '../api';
 
@@ -14,6 +14,7 @@ const STATE_COLORS: Record<AppState, string> = {
 };
 
 export function ListPage() {
+  const navigate = useNavigate();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -91,8 +92,8 @@ export function ListPage() {
       {applications.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
           <p>No applications found.</p>
-          <Link to="/applications/board" className="mt-2 text-blue-400 hover:underline">
-            Add applications on the Board
+          <Link to="/applications/new" className="mt-2 text-blue-400 hover:underline">
+            Add your first application
           </Link>
         </div>
       ) : (
@@ -108,22 +109,13 @@ export function ListPage() {
             </thead>
             <tbody className="divide-y divide-gray-700">
               {applications.map((app) => (
-                <tr key={app.id} className="hover:bg-gray-750">
+                <tr
+                  key={app.id}
+                  onClick={() => navigate(`/applications/${app.id}`)}
+                  className="hover:bg-gray-700 cursor-pointer"
+                >
                   <td className="px-4 py-3 text-white font-medium">{app.company.name}</td>
-                  <td className="px-4 py-3 text-gray-300">
-                    {app.jobReqUrl ? (
-                      <a
-                        href={app.jobReqUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:underline"
-                      >
-                        {app.jobTitle}
-                      </a>
-                    ) : (
-                      app.jobTitle
-                    )}
-                  </td>
+                  <td className="px-4 py-3 text-gray-300">{app.jobTitle}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${STATE_COLORS[app.currentState]}`}

@@ -29,10 +29,16 @@ export function CompaniesPage() {
     e.preventDefault();
     if (!newName.trim()) return;
 
+    // Auto-prefix https:// if user enters a URL without protocol
+    let website = newWebsite.trim();
+    if (website && !website.startsWith('http://') && !website.startsWith('https://')) {
+      website = 'https://' + website;
+    }
+
     try {
       const company = await companiesApi.create({
         name: newName.trim(),
-        website: newWebsite.trim() || undefined,
+        website: website || undefined,
       });
       setCompanies((prev) => [...prev, { ...company, tags: [], applicationCount: 0, updatedAt: company.createdAt }]);
       setShowAddModal(false);
@@ -157,11 +163,11 @@ export function CompaniesPage() {
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-300 mb-1">Website (optional)</label>
                 <input
-                  type="url"
+                  type="text"
                   value={newWebsite}
                   onChange={(e) => setNewWebsite(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://..."
+                  placeholder="www.example.com"
                 />
               </div>
               <div className="flex gap-3 justify-end">

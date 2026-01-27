@@ -1,0 +1,365 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { applicationsApi, companiesApi } from '../api';
+import type { Application, AppState, Company } from '../api';
+
+const STATE_COLORS: Record<AppState, string> = {
+  INTERESTED: 'bg-blue-500',
+  APPLIED: 'bg-yellow-500',
+  SCREENING: 'bg-purple-500',
+  INTERVIEW: 'bg-green-500',
+  REJECTED: 'bg-red-500',
+  GHOSTED: 'bg-gray-500',
+  TRASH: 'bg-gray-700',
+};
+
+const ALLOWED_TRANSITIONS: Record<AppState, AppState[]> = {
+  INTERESTED: ['APPLIED', 'TRASH'],
+  APPLIED: ['SCREENING', 'REJECTED', 'GHOSTED', 'TRASH'],
+  SCREENING: ['INTERVIEW', 'REJECTED', 'GHOSTED', 'TRASH'],
+  INTERVIEW: ['REJECTED', 'GHOSTED', 'TRASH'],
+  REJECTED: [],
+  GHOSTED: [],
+  TRASH: [],
+};
+
+export function ApplicationPage() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const isNew = id === 'new';
+
+  const [application, setApplication] = useState<Application | null>(null);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  // Form state
+  const [companyId, setCompanyId] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [jobReqUrl, setJobReqUrl] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const companiesRes = await companiesApi.list();
+        setCompanies(companiesRes.items);
+
+        if (!isNew && id) {
+          const app = await applicationsApi.get(id);
+          setApplication(app);
+          setCompanyId(app.company.id);
+          setJobTitle(app.jobTitle);
+          setJobReqUrl(app.jobReqUrl || '');
+          setTags(app.tags);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [id, isNew]);
+
+  const handleAddTag = () => {
+    const newTag = tagInput.trim().toLowerCase();
+    if (newTag && !tags.includes(newTag)) {
+      setTags([...tags, newTag]);
+    }
+    setTagInput('');
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter((t) => t !== tagToRemove));
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    }
+  };
+
+  const handleSave = async () => {
+    if (!jobTitle.trim()) {
+      setError('Job title is required');
+      return;
+    }
+
+    setSaving(true);
+    setError('');
+
+    try {
+      if (isNew) {
+        if (!companyId) {
+          setError('Company is required');
+          setSaving(false);
+          return;
+        }
+        const newApp = await applicationsApi.create({
+          companyId,
+          jobTitle: jobTitle.trim(),
+          jobReqUrl: jobReqUrl.trim() || undefined,
+        });
+        // If tags were added, update them
+        if (tags.length > 0) {
+          await applicationsApi.update(newApp.id, { tags });
+        }
+        navigate(`/applications/${newApp.id}`);
+      } else if (id) {
+        await applicationsApi.update(id, {
+          jobTitle: jobTitle.trim(),
+          jobReqUrl: jobReqUrl.trim() || undefined,
+          tags,
+        });
+        // Reload to get fresh data
+        const updated = await applicationsApi.get(id);
+        setApplication(updated);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleMove = async (toState: AppState) => {
+    if (!id || isNew) return;
+
+    setSaving(true);
+    try {
+      await applicationsApi.move(id, toState);
+      const updated = await applicationsApi.get(id);
+      setApplication(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to move application');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id || isNew) return;
+    if (!confirm('Delete this application? This cannot be undone.')) return;
+
+    setSaving(true);
+    try {
+      await applicationsApi.delete(id);
+      navigate('/applications/board');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete');
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-400">Loading...</div>
+      </div>
+    );
+  }
+
+  const allowedMoves = application ? ALLOWED_TRANSITIONS[application.currentState] : [];
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      {/* Breadcrumb */}
+      <div className="mb-6">
+        <Link to="/applications/board" className="text-blue-400 hover:underline text-sm">
+          ← Back to Board
+        </Link>
+      </div>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded text-red-400">
+          {error}
+          <button onClick={() => setError('')} className="ml-2 underline">
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      <div className="bg-gray-800 rounded-lg p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              {isNew ? 'New Application' : application?.company.name}
+            </h1>
+            {!isNew && application && (
+              <span
+                className={`inline-block mt-2 px-2 py-1 rounded text-xs font-medium text-white ${STATE_COLORS[application.currentState]}`}
+              >
+                {application.currentState}
+              </span>
+            )}
+          </div>
+          {!isNew && application?.jobReqUrl && (
+            <a
+              href={application.jobReqUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 text-sm"
+            >
+              View Job Posting ↗
+            </a>
+          )}
+        </div>
+
+        {/* Form */}
+        <div className="space-y-6">
+          {/* Company (only for new) */}
+          {isNew && (
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Company <span className="text-red-400">*</span>
+              </label>
+              <select
+                value={companyId}
+                onChange={(e) => setCompanyId(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select a company</option>
+                {companies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {companies.length === 0 && (
+                <p className="mt-1 text-sm text-gray-400">
+                  No companies yet.{' '}
+                  <Link to="/companies" className="text-blue-400 hover:underline">
+                    Add one first
+                  </Link>
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Job Title */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Job Title <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., Senior Software Engineer"
+            />
+          </div>
+
+          {/* Job URL */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Job Posting URL
+            </label>
+            <input
+              type="text"
+              value={jobReqUrl}
+              onChange={(e) => setJobReqUrl(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="https://..."
+            />
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Tags</label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 bg-blue-600 text-white text-sm px-2 py-1 rounded"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="hover:text-red-300"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Add tag and press Enter"
+              />
+              <button
+                type="button"
+                onClick={handleAddTag}
+                className="px-3 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md transition-colors"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          {/* State transitions (only for existing) */}
+          {!isNew && application && allowedMoves.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Move to
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {allowedMoves.map((state) => (
+                  <button
+                    key={state}
+                    onClick={() => handleMove(state)}
+                    disabled={saving}
+                    className={`px-3 py-1.5 rounded text-sm font-medium text-white transition-colors ${STATE_COLORS[state]} hover:opacity-80 disabled:opacity-50`}
+                  >
+                    {state}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-700">
+          <div>
+            {!isNew && (
+              <button
+                onClick={handleDelete}
+                disabled={saving}
+                className="text-red-400 hover:text-red-300 text-sm"
+              >
+                Delete Application
+              </button>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <Link
+              to="/applications/board"
+              className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+            >
+              Cancel
+            </Link>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-md transition-colors"
+            >
+              {saving ? 'Saving...' : isNew ? 'Create Application' : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

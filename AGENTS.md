@@ -162,6 +162,7 @@ docker compose exec api npx prisma db seed
 ## Spec Documents
 
 For detailed requirements, see:
+
 - [docs/specs/000-overview.md](docs/specs/000-overview.md) - High-level goals
 - [docs/specs/010-domain-model.md](docs/specs/010-domain-model.md) - Data model
 - [docs/specs/020-api-contract.md](docs/specs/020-api-contract.md) - API spec

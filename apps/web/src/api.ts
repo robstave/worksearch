@@ -148,3 +148,23 @@ export const applicationsApi = {
     ),
   delete: (id: string) => request<void>(`/applications/${id}`, { method: 'DELETE' }),
 };
+
+// Job Boards
+export interface JobBoard {
+  id: string;
+  name: string;
+  link: string | null;
+  notesMd: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const jobBoardsApi = {
+  list: () => request<{ items: JobBoard[] }>('/job-boards'),
+  get: (id: string) => request<JobBoard>(`/job-boards/${id}`),
+  create: (data: { name: string; link?: string; notesMd?: string }) =>
+    request<JobBoard>('/job-boards', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: { name?: string; link?: string; notesMd?: string }) =>
+    request<JobBoard>(`/job-boards/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  delete: (id: string) => request<void>(`/job-boards/${id}`, { method: 'DELETE' }),
+};

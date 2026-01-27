@@ -160,6 +160,25 @@ Rules:
 
 - Events are editable/deletable (unlike transitions)
 
+### JobBoard
+
+Represents a saved job board or search bookmark (e.g., LinkedIn, Indeed, Glassdoor).
+Useful for organizing frequently used job search links and related notes.
+
+Key fields:
+
+- id
+- ownerUserId
+- name (e.g., "LinkedIn Jobs", "Indeed Software Engineer")
+- link (optional - main URL for the job board/search)
+- notesMd (markdown - for sub-links, saved searches, notes)
+- createdAt/updatedAt
+
+Rules:
+
+- Simple CRUD, no relationships to other entities
+- Notes support markdown for rich content with multiple links
+
 ## 4) Derived/Computed Concepts
 
 ### Age in state

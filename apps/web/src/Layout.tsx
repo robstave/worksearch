@@ -5,6 +5,7 @@ const NAV_ITEMS = [
   { path: '/applications/board', label: 'Board' },
   { path: '/applications/list', label: 'List' },
   { path: '/companies', label: 'Companies' },
+  { path: '/job-boards', label: 'Job Boards' },
 ];
 
 export function Layout() {

@@ -378,3 +378,59 @@ Response 200:
     }
   ]
 }
+
+## Job Boards
+
+GET /job-boards
+
+Response 200:
+{
+  "items": [
+    {
+      "id": "string",
+      "name": "string",
+      "link": "string|null",
+      "notesMd": "string",
+      "createdAt": "string",
+      "updatedAt": "string"
+    }
+  ]
+}
+
+GET /job-boards/:id
+
+Response 200:
+{
+  "id": "string",
+  "name": "string",
+  "link": "string|null",
+  "notesMd": "string",
+  "createdAt": "string",
+  "updatedAt": "string"
+}
+
+POST /job-boards
+
+Request:
+{
+  "name": "string",
+  "link": "string (optional)",
+  "notesMd": "string (optional)"
+}
+
+Response 201: (same as GET /job-boards/:id)
+
+PATCH /job-boards/:id
+
+Request:
+{
+  "name": "string (optional)",
+  "link": "string (optional)",
+  "notesMd": "string (optional)"
+}
+
+Response 200: (same as GET /job-boards/:id)
+
+DELETE /job-boards/:id
+
+Response 204

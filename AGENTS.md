@@ -38,6 +38,7 @@ apps/
       auth/      # Session-based auth (login/logout/me)
       companies/ # Company CRUD
       applications/ # Applications CRUD + state machine
+      job-boards/  # Job Boards CRUD
       prisma/    # PrismaService
     prisma/
       schema.prisma
@@ -52,6 +53,9 @@ apps/
         BoardPage.tsx    # Kanban board with drag-drop
         ListPage.tsx     # Table view with filters
         CompaniesPage.tsx
+        ApplicationPage.tsx  # Application detail/edit
+        JobBoardsPage.tsx    # Job boards list
+        JobBoardPage.tsx     # Job board detail/edit
 docs/
   specs/         # Original requirements
 ```
@@ -68,7 +72,9 @@ docs/
 | Kanban Board | ✅ | ✅ | Drag-drop moves |
 | List View | ✅ | ✅ | Search + filter |
 | Tags | ✅ | ✅ | Simple string array |
-| Application Edit Modal | ✅ | ✅ | Title, URL, tags |
+| Application Detail Page | ✅ | ✅ | Title, URL, tags, markdown description |
+| Applied Date | ✅ | ✅ | Captured on APPLIED transition |
+| Job Boards | ✅ | ✅ | Save job board bookmarks with markdown notes |
 
 ### 🔲 Not Yet Implemented
 
@@ -119,9 +125,15 @@ DELETE /api/companies/:id
 GET    /api/applications   ?state=&search=&sort=&order=
 POST   /api/applications   { companyId, jobTitle, jobReqUrl? }
 GET    /api/applications/:id
-PATCH  /api/applications/:id { jobTitle?, jobReqUrl?, tags? }
+PATCH  /api/applications/:id { jobTitle?, jobReqUrl?, jobDescriptionMd?, tags? }
 POST   /api/applications/:id/move { toState, note? }
 DELETE /api/applications/:id
+
+GET    /api/job-boards
+POST   /api/job-boards     { name, link?, notesMd? }
+GET    /api/job-boards/:id
+PATCH  /api/job-boards/:id { name?, link?, notesMd? }
+DELETE /api/job-boards/:id
 ```
 
 ## Common Tasks

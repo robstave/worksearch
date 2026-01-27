@@ -75,6 +75,7 @@ docs/
 | Application Detail Page | ✅ | ✅ | Title, URL, tags, markdown description |
 | Applied Date | ✅ | ✅ | Captured on APPLIED transition |
 | Job Boards | ✅ | ✅ | Save job board bookmarks with markdown notes |
+| Work Location Type | ✅ | ✅ | REMOTE/ONSITE/HYBRID/CONTRACT enum field |
 
 ### 🔲 Not Yet Implemented
 

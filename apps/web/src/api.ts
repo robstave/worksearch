@@ -90,12 +90,15 @@ export type AppState =
   | 'GHOSTED'
   | 'TRASH';
 
+export type WorkLocationType = 'REMOTE' | 'ONSITE' | 'HYBRID' | 'CONTRACT';
+
 export interface Application {
   id: string;
   company: { id: string; name: string };
   jobTitle: string;
   jobReqUrl: string | null;
   currentState: AppState;
+  workLocation: WorkLocationType | null;
   tags: string[];
   lastTransitionAt: string | null;
   appliedAt: string | null;
@@ -139,9 +142,10 @@ export const applicationsApi = {
     jobTitle: string;
     jobReqUrl?: string;
     jobDescriptionMd?: string;
+    workLocation?: WorkLocationType;
     initialState?: AppState;
   }) => request<Application>('/applications', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[] }) =>
+  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType }) =>
     request<Application>(`/applications/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   move: (id: string, toState: AppState, note?: string) =>
     request<{ applicationId: string; fromState: AppState; toState: AppState; transitionedAt: string }>(

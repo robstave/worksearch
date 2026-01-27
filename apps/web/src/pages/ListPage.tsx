@@ -113,8 +113,9 @@ export function ListPage() {
           <table className="w-full table-fixed">
             <thead className="bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/5">Company</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-2/5">Job Title</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">Company</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-2/6">Job Title</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/12">Location</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">State</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">Applied</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">Updated</th>
@@ -129,6 +130,9 @@ export function ListPage() {
                 >
                   <td className="px-4 py-3 text-left text-white font-medium">{app.company.name}</td>
                   <td className="px-4 py-3 text-left text-gray-300">{app.jobTitle}</td>
+                  <td className="px-4 py-3 text-left text-gray-400 text-sm">
+                    {app.workLocation || '—'}
+                  </td>
                   <td className="px-4 py-3 text-left">
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${STATE_COLORS[app.currentState]}`}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { applicationsApi } from '../api';
 import type { Application, AppState } from '../api';
@@ -41,16 +41,16 @@ function ApplicationCard({ app, onDragStart, onClick }: ApplicationCardProps) {
       draggable
       onDragStart={() => onDragStart(app)}
       onClick={onClick}
-      className="bg-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-600 transition-colors border border-gray-600 hover:border-gray-500"
+      className="bg-gray-700 rounded-lg p-2 cursor-pointer hover:bg-gray-600 transition-colors border border-gray-600 hover:border-gray-500"
     >
-      <div className="font-medium text-white truncate">{app.company.name}</div>
-      <div className="text-sm text-gray-300 truncate">{app.jobTitle}</div>
-      <div className="flex items-center justify-between mt-2">
+      <div className="font-medium text-white text-sm truncate">{app.company.name}</div>
+      <div className="text-xs text-gray-300 truncate">{app.jobTitle}</div>
+      <div className="flex items-center justify-between mt-1.5">
         <div className="flex gap-1 flex-wrap">
           {app.tags.slice(0, 2).map((tag) => (
             <span
               key={tag}
-              className="text-xs bg-gray-600 text-gray-300 px-1.5 py-0.5 rounded"
+              className="text-xs bg-gray-600 text-gray-300 px-1 py-0.5 rounded"
             >
               {tag}
             </span>
@@ -91,7 +91,7 @@ function Column({
 }: ColumnProps) {
   return (
     <div
-      className={`flex-shrink-0 w-72 bg-gray-800 rounded-lg flex flex-col max-h-full ${
+      className={`flex-shrink-0 w-52 bg-gray-800 rounded-lg flex flex-col max-h-full ${
         isDragOver ? 'ring-2 ring-blue-500' : ''
       }`}
       onDragOver={(e) => {
@@ -107,12 +107,12 @@ function Column({
         }
       }}
     >
-      <div className="p-3 border-b border-gray-700 flex items-center gap-2">
-        <div className={`w-3 h-3 rounded-full ${color}`} />
-        <span className="font-medium text-white">{label}</span>
-        <span className="ml-auto text-sm text-gray-400">{apps.length}</span>
+      <div className="p-2 border-b border-gray-700 flex items-center gap-2">
+        <div className={`w-2.5 h-2.5 rounded-full ${color}`} />
+        <span className="font-medium text-white text-sm">{label}</span>
+        <span className="ml-auto text-xs text-gray-400">{apps.length}</span>
       </div>
-      <div className="p-2 flex-1 overflow-y-auto space-y-2">
+      <div className="p-1.5 flex-1 overflow-y-auto space-y-1.5">
         {apps.length === 0 ? (
           <div className="text-center text-gray-500 text-sm py-4">
             No applications
@@ -139,6 +139,51 @@ export function BoardPage() {
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState<Application | null>(null);
   const [dragOverState, setDragOverState] = useState<AppState | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollIntervalRef = useRef<number | null>(null);
+
+  // Auto-scroll when dragging near edges
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    if (!scrollContainerRef.current || !dragging) return;
+    
+    const container = scrollContainerRef.current;
+    const rect = container.getBoundingClientRect();
+    const scrollZone = 80; // pixels from edge to trigger scroll
+    const scrollSpeed = 15; // pixels per frame
+    
+    const mouseX = e.clientX;
+    
+    // Clear any existing scroll interval
+    if (scrollIntervalRef.current) {
+      cancelAnimationFrame(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+    }
+    
+    const scroll = () => {
+      if (!scrollContainerRef.current) return;
+      
+      if (mouseX < rect.left + scrollZone) {
+        // Scroll left
+        scrollContainerRef.current.scrollLeft -= scrollSpeed;
+        scrollIntervalRef.current = requestAnimationFrame(scroll);
+      } else if (mouseX > rect.right - scrollZone) {
+        // Scroll right
+        scrollContainerRef.current.scrollLeft += scrollSpeed;
+        scrollIntervalRef.current = requestAnimationFrame(scroll);
+      }
+    };
+    
+    if (mouseX < rect.left + scrollZone || mouseX > rect.right - scrollZone) {
+      scroll();
+    }
+  }, [dragging]);
+
+  const stopAutoScroll = useCallback(() => {
+    if (scrollIntervalRef.current) {
+      cancelAnimationFrame(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+    }
+  }, []);
 
   const loadData = async () => {
     try {
@@ -212,7 +257,13 @@ export function BoardPage() {
         </div>
       )}
 
-      <div className="flex gap-4 overflow-x-auto pb-4 h-full">
+      <div 
+        ref={scrollContainerRef}
+        className="flex gap-3 overflow-x-auto pb-4 h-full scroll-smooth"
+        onDragOver={handleDragOver}
+        onDragEnd={stopAutoScroll}
+        onDrop={stopAutoScroll}
+      >
         {COLUMNS.map((col) => (
           <Column
             key={col.state}

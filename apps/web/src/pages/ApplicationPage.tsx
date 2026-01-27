@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { applicationsApi, companiesApi } from '../api';
-import type { Application, AppState, Company } from '../api';
+import type { Application, AppState, Company, WorkLocationType } from '../api';
 
 const STATE_COLORS: Record<AppState, string> = {
   INTERESTED: 'bg-blue-500',
@@ -44,6 +44,7 @@ export function ApplicationPage() {
   const [companyId, setCompanyId] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [jobReqUrl, setJobReqUrl] = useState('');
+  const [workLocation, setWorkLocation] = useState<WorkLocationType | ''>('HYBRID');
   const [description, setDescription] = useState('');
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
@@ -61,6 +62,7 @@ export function ApplicationPage() {
           setCompanyId(app.company.id);
           setJobTitle(app.jobTitle);
           setJobReqUrl(app.jobReqUrl || '');
+          setWorkLocation(app.workLocation || '');
           setDescription(app.jobDescriptionMd || '');
           setTags(app.tags);
         } else if (isNew) {
@@ -118,6 +120,7 @@ export function ApplicationPage() {
           companyId,
           jobTitle: jobTitle.trim(),
           jobReqUrl: jobReqUrl.trim() || undefined,
+          workLocation: workLocation || undefined,
         });
         // If tags were added, update them
         if (tags.length > 0) {
@@ -128,6 +131,7 @@ export function ApplicationPage() {
         await applicationsApi.update(id, {
           jobTitle: jobTitle.trim(),
           jobReqUrl: jobReqUrl.trim() || undefined,
+          workLocation: workLocation || undefined,
           jobDescriptionMd: description,
           tags,
         });
@@ -288,6 +292,24 @@ export function ApplicationPage() {
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="https://..."
             />
+          </div>
+
+          {/* Work Location */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Work Location
+            </label>
+            <select
+              value={workLocation}
+              onChange={(e) => setWorkLocation(e.target.value as WorkLocationType | '')}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Not specified</option>
+              <option value="REMOTE">Remote</option>
+              <option value="ONSITE">On-site</option>
+              <option value="HYBRID">Hybrid</option>
+              <option value="CONTRACT">Contract</option>
+            </select>
           </div>
 
           {/* Tags */}

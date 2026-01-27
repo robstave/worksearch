@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { Button } from '@/components/ui/button';
 
 export function LoginPage() {
   const { login, user, loading } = useAuth();
@@ -85,13 +86,13 @@ export function LoginPage() {
             />
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={submitting}
-            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-medium rounded-md transition-colors"
+            className="w-full"
           >
             {submitting ? 'Signing in...' : 'Sign in'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

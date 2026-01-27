@@ -138,7 +138,7 @@ export const applicationsApi = {
     jobDescriptionMd?: string;
     initialState?: AppState;
   }) => request<Application>('/applications', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string }) =>
+  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[] }) =>
     request<Application>(`/applications/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   move: (id: string, toState: AppState, note?: string) =>
     request<{ applicationId: string; fromState: AppState; toState: AppState; transitionedAt: string }>(

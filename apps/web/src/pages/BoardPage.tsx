@@ -209,6 +209,200 @@ function AddApplicationModal({ companies, onClose, onSubmit }: AddApplicationMod
   );
 }
 
+interface ApplicationEditModalProps {
+  app: Application;
+  onClose: () => void;
+  onSave: (id: string, data: { jobTitle?: string; jobReqUrl?: string; tags?: string[] }) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}
+
+function ApplicationEditModal({ app, onClose, onSave, onDelete }: ApplicationEditModalProps) {
+  const [jobTitle, setJobTitle] = useState(app.jobTitle);
+  const [jobReqUrl, setJobReqUrl] = useState(app.jobReqUrl || '');
+  const [tags, setTags] = useState<string[]>(app.tags);
+  const [tagInput, setTagInput] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const handleAddTag = () => {
+    const newTag = tagInput.trim().toLowerCase();
+    if (newTag && !tags.includes(newTag)) {
+      setTags([...tags, newTag]);
+    }
+    setTagInput('');
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter((t) => t !== tagToRemove));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await onSave(app.id, {
+        jobTitle,
+        jobReqUrl: jobReqUrl || undefined,
+        tags,
+      });
+      onClose();
+    } catch {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setSaving(true);
+    try {
+      await onDelete(app.id);
+      onClose();
+    } catch {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-white">{app.company.name}</h2>
+            <span className="text-sm text-gray-400">{app.currentState}</span>
+          </div>
+          {app.jobReqUrl && (
+            <a
+              href={app.jobReqUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 text-sm"
+            >
+              View Job Posting ↗
+            </a>
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-300 mb-1">Job Title</label>
+            <input
+              type="text"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              required
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-300 mb-1">Job URL</label>
+            <input
+              type="url"
+              value={jobReqUrl}
+              onChange={(e) => setJobReqUrl(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="https://..."
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-1">Tags</label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 bg-blue-600 text-white text-sm px-2 py-1 rounded"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="hover:text-red-300"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Add tag and press Enter"
+              />
+              <button
+                type="button"
+                onClick={handleAddTag}
+                className="px-3 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md transition-colors"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              {!confirmDelete ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="text-red-400 hover:text-red-300 text-sm"
+                >
+                  Delete
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-red-400 text-sm">Sure?</span>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={saving}
+                    className="text-red-400 hover:text-red-300 text-sm font-medium"
+                  >
+                    Yes, delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(false)}
+                    className="text-gray-400 hover:text-gray-300 text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-md transition-colors"
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export function BoardPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -265,6 +459,29 @@ export function BoardPage() {
       setShowAddModal(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create application');
+    }
+  };
+
+  const handleUpdateApplication = async (id: string, data: { jobTitle?: string; jobReqUrl?: string; tags?: string[] }) => {
+    try {
+      const updated = await applicationsApi.update(id, data);
+      setApplications((apps) =>
+        apps.map((a) => (a.id === id ? { ...a, ...updated } : a))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update application');
+      throw err;
+    }
+  };
+
+  const handleDeleteApplication = async (id: string) => {
+    try {
+      await applicationsApi.delete(id);
+      setApplications((apps) => apps.filter((a) => a.id !== id));
+      setSelectedApp(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete application');
+      throw err;
     }
   };
 
@@ -333,45 +550,12 @@ export function BoardPage() {
       )}
 
       {selectedApp && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          onClick={() => setSelectedApp(null)}
-        >
-          <div
-            className="bg-gray-800 rounded-lg p-6 w-full max-w-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold text-white">{selectedApp.company.name}</h2>
-            <p className="text-gray-300">{selectedApp.jobTitle}</p>
-            <div className="mt-4 space-y-2 text-sm">
-              <div>
-                <span className="text-gray-400">State:</span>{' '}
-                <span className="text-white">{selectedApp.currentState}</span>
-              </div>
-              {selectedApp.jobReqUrl && (
-                <div>
-                  <span className="text-gray-400">URL:</span>{' '}
-                  <a
-                    href={selectedApp.jobReqUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
-                  >
-                    {selectedApp.jobReqUrl}
-                  </a>
-                </div>
-              )}
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setSelectedApp(null)}
-                className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+        <ApplicationEditModal
+          app={selectedApp}
+          onClose={() => setSelectedApp(null)}
+          onSave={handleUpdateApplication}
+          onDelete={handleDeleteApplication}
+        />
       )}
     </div>
   );

@@ -1,0 +1,145 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { applicationsApi } from '../api';
+import type { Application, AppState } from '../api';
+
+const STATE_COLORS: Record<AppState, string> = {
+  INTERESTED: 'bg-blue-500',
+  APPLIED: 'bg-yellow-500',
+  SCREENING: 'bg-purple-500',
+  INTERVIEW: 'bg-green-500',
+  REJECTED: 'bg-red-500',
+  GHOSTED: 'bg-gray-500',
+  TRASH: 'bg-gray-700',
+};
+
+export function ListPage() {
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [stateFilter, setStateFilter] = useState<AppState | ''>('');
+
+  const loadApplications = async () => {
+    try {
+      const res = await applicationsApi.list({
+        search: search || undefined,
+        state: stateFilter || undefined,
+      });
+      setApplications(res.items);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load applications');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadApplications();
+  }, [search, stateFilter]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-400">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white">Applications List</h1>
+        <Link
+          to="/applications/board"
+          className="text-blue-400 hover:underline text-sm"
+        >
+          Switch to Board View →
+        </Link>
+      </div>
+
+      <div className="flex gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Search company or job title..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <select
+          value={stateFilter}
+          onChange={(e) => setStateFilter(e.target.value as AppState | '')}
+          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All States</option>
+          <option value="INTERESTED">Interested</option>
+          <option value="APPLIED">Applied</option>
+          <option value="SCREENING">Screening</option>
+          <option value="INTERVIEW">Interview</option>
+          <option value="REJECTED">Rejected</option>
+          <option value="GHOSTED">Ghosted</option>
+          <option value="TRASH">Trash</option>
+        </select>
+      </div>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded text-red-400">
+          {error}
+        </div>
+      )}
+
+      {applications.length === 0 ? (
+        <div className="text-center py-12 text-gray-400">
+          <p>No applications found.</p>
+          <Link to="/applications/board" className="mt-2 text-blue-400 hover:underline">
+            Add applications on the Board
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-gray-800 rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-700">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Company</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Job Title</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">State</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Updated</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {applications.map((app) => (
+                <tr key={app.id} className="hover:bg-gray-750">
+                  <td className="px-4 py-3 text-white font-medium">{app.company.name}</td>
+                  <td className="px-4 py-3 text-gray-300">
+                    {app.jobReqUrl ? (
+                      <a
+                        href={app.jobReqUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:underline"
+                      >
+                        {app.jobTitle}
+                      </a>
+                    ) : (
+                      app.jobTitle
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${STATE_COLORS[app.currentState]}`}
+                    >
+                      {app.currentState}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-400 text-sm">
+                    {new Date(app.updatedAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}

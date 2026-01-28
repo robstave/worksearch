@@ -16,7 +16,14 @@ API: REST (/api), session-cookie auth
   - Companies
 - Right side user menu:
   - user email
+  - user icon/avatar (optional)
   - logout
+
+### Theme
+
+- Support Light/Dark mode toggle
+- Persist preference (localStorage)
+- Default: follow system preference if no explicit user choice
 
 ### Common UI elements
 
@@ -36,6 +43,8 @@ API: REST (/api), session-cookie auth
 - /companies/:id
 
 Default route after login: `/applications/board`
+
+Note: current implementation defaults to `/applications/list`.
 
 ## 2) Authentication UX
 
@@ -115,6 +124,7 @@ Sort modes (user selectable):
 - Updated recently (default): uses application.updatedAt or lastTransitionAt
 - Company name (A→Z)
 - Age in state (oldest first)
+- Applied date (most recent first)
 
 Implementation note:
 

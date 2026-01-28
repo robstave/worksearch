@@ -15,11 +15,13 @@ export function CompaniesPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [sortField, setSortField] = useState<'name' | 'applicationCount' | 'createdAt'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const limit = 20;
 
   const loadCompanies = async () => {
     try {
-      const res = await companiesApi.list({ page, limit });
+      const res = await companiesApi.list({ sort: sortField, order: sortOrder, page, limit });
       setCompanies(res.items);
       setTotalPages(res.totalPages);
       setTotal(res.total);
@@ -31,8 +33,12 @@ export function CompaniesPage() {
   };
 
   useEffect(() => {
+    setPage(1);
+  }, [sortField, sortOrder]);
+
+  useEffect(() => {
     loadCompanies();
-  }, [page]);
+  }, [page, sortField, sortOrder]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +79,29 @@ export function CompaniesPage() {
     return <LoadingScreen message="Loading companies..." />;
   }
 
+  const handleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder(field === 'name' ? 'asc' : 'desc');
+    }
+  };
+
+  const SortHeader = ({ field, children, className = '' }: { field: typeof sortField; children: React.ReactNode; className?: string }) => (
+    <th
+      onClick={() => handleSort(field)}
+      className={`px-4 py-3 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 select-none ${className}`}
+    >
+      <span className="flex items-center gap-1">
+        {children}
+        {sortField === field && (
+          <span className="text-blue-400">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+        )}
+      </span>
+    </th>
+  );
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -109,9 +138,9 @@ export function CompaniesPage() {
           <table className="w-full">
             <thead className="bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Name</th>
+                <SortHeader field="name">Name</SortHeader>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Website</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Applications</th>
+                <SortHeader field="applicationCount">Applications</SortHeader>
                 <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">Actions</th>
               </tr>
             </thead>

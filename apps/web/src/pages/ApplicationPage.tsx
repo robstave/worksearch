@@ -49,6 +49,7 @@ export function ApplicationPage() {
   const [jobTitle, setJobTitle] = useState('');
   const [jobReqUrl, setJobReqUrl] = useState('');
   const [workLocation, setWorkLocation] = useState<WorkLocationType | ''>('HYBRID');
+  const [appliedAt, setAppliedAt] = useState('');
   const [description, setDescription] = useState('');
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
@@ -72,6 +73,11 @@ export function ApplicationPage() {
           setJobTitle(app.jobTitle);
           setJobReqUrl(app.jobReqUrl || '');
           setWorkLocation(app.workLocation || '');
+          // Format appliedAt for date input (YYYY-MM-DD)
+          if (app.appliedAt) {
+            const date = new Date(app.appliedAt);
+            setAppliedAt(date.toISOString().slice(0, 10));
+          }
           setDescription(app.jobDescriptionMd || '');
           setTags(app.tags);
         } else if (isNew) {
@@ -176,6 +182,7 @@ export function ApplicationPage() {
           jobTitle: jobTitle.trim(),
           jobReqUrl: jobReqUrl.trim() || undefined,
           workLocation: workLocation || undefined,
+          appliedAt: appliedAt || undefined,
           jobDescriptionMd: description,
           tags,
         });
@@ -351,6 +358,24 @@ export function ApplicationPage() {
               <option value="CONTRACT">Contract</option>
             </select>
           </div>
+
+          {/* Applied Date (only for existing applications) */}
+          {!isNew && (
+            <div>
+              <label className="block text-left text-sm font-medium text-gray-300 mb-1">
+                Applied Date
+              </label>
+              <input
+                type="date"
+                value={appliedAt}
+                onChange={(e) => setAppliedAt(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Leave empty if not yet applied
+              </p>
+            </div>
+          )}
 
           {/* Tags */}
           <div>

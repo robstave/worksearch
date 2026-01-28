@@ -71,10 +71,12 @@ export interface PaginatedResponse<T> {
 }
 
 export const companiesApi = {
-  list: (options?: { search?: string; tag?: string; page?: number; limit?: number }) => {
+  list: (options?: { search?: string; tag?: string; sort?: 'name' | 'applicationCount' | 'createdAt'; order?: 'asc' | 'desc'; page?: number; limit?: number }) => {
     const params = new URLSearchParams();
     if (options?.search) params.set('search', options.search);
     if (options?.tag) params.set('tag', options.tag);
+    if (options?.sort) params.set('sort', options.sort);
+    if (options?.order) params.set('order', options.order);
     if (options?.page) params.set('page', options.page.toString());
     if (options?.limit) params.set('limit', options.limit.toString());
     const query = params.toString();
@@ -139,6 +141,8 @@ export const applicationsApi = {
     state?: AppState;
     companyId?: string;
     search?: string;
+    sort?: 'updatedAt' | 'company' | 'appliedAt' | 'jobTitle' | 'state' | 'workLocation';
+    order?: 'asc' | 'desc';
     page?: number;
     limit?: number;
   }) => {
@@ -146,6 +150,8 @@ export const applicationsApi = {
     if (options?.state) params.set('state', options.state);
     if (options?.companyId) params.set('companyId', options.companyId);
     if (options?.search) params.set('search', options.search);
+    if (options?.sort) params.set('sort', options.sort);
+    if (options?.order) params.set('order', options.order);
     if (options?.page) params.set('page', options.page.toString());
     if (options?.limit) params.set('limit', options.limit.toString());
     const query = params.toString();
@@ -198,7 +204,13 @@ export interface JobBoard {
 }
 
 export const jobBoardsApi = {
-  list: () => request<{ items: JobBoard[] }>('/job-boards'),
+  list: (options?: { sort?: 'name' | 'updatedAt'; order?: 'asc' | 'desc' }) => {
+    const params = new URLSearchParams();
+    if (options?.sort) params.set('sort', options.sort);
+    if (options?.order) params.set('order', options.order);
+    const query = params.toString();
+    return request<{ items: JobBoard[] }>(`/job-boards${query ? `?${query}` : ''}`);
+  },
   get: (id: string) => request<JobBoard>(`/job-boards/${id}`),
   create: (data: { name: string; link?: string; notesMd?: string }) =>
     request<JobBoard>('/job-boards', { method: 'POST', body: JSON.stringify(data) }),

@@ -9,10 +9,12 @@ export function JobBoardsPage() {
   const [jobBoards, setJobBoards] = useState<JobBoard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sortField, setSortField] = useState<'name' | 'updatedAt'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const loadJobBoards = async () => {
     try {
-      const res = await jobBoardsApi.list();
+      const res = await jobBoardsApi.list({ sort: sortField, order: sortOrder });
       setJobBoards(res.items);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load job boards');
@@ -23,11 +25,34 @@ export function JobBoardsPage() {
 
   useEffect(() => {
     loadJobBoards();
-  }, []);
+  }, [sortField, sortOrder]);
 
   if (loading) {
     return <LoadingScreen message="Loading job boards..." />;
   }
+
+  const handleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder(field === 'name' ? 'asc' : 'desc');
+    }
+  };
+
+  const SortHeader = ({ field, children, className = '' }: { field: typeof sortField; children: React.ReactNode; className?: string }) => (
+    <th
+      onClick={() => handleSort(field)}
+      className={`px-4 py-3 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 select-none ${className}`}
+    >
+      <span className="flex items-center gap-1">
+        {children}
+        {sortField === field && (
+          <span className="text-blue-400">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+        )}
+      </span>
+    </th>
+  );
 
   return (
     <div>
@@ -59,9 +84,9 @@ export function JobBoardsPage() {
           <table className="w-full table-fixed">
             <thead className="bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/4">Name</th>
+                <SortHeader field="name" className="w-1/4">Name</SortHeader>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/2">Link</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/4">Updated</th>
+                <SortHeader field="updatedAt" className="w-1/4">Updated</SortHeader>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">

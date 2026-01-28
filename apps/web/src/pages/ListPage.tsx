@@ -22,6 +22,7 @@ export function ListPage() {
   const [searchParams] = useSearchParams();
   const [applications, setApplications] = useState<Application[]>([]);
   const [stats, setStats] = useState<{ applied: number; interviewed: number; passedOn: number } | null>(null);
+  const [timeline, setTimeline] = useState<Array<{ date: string; count: number }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState(searchParams.get('search') || '');
@@ -29,23 +30,29 @@ export function ListPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [sortField, setSortField] = useState<'updatedAt' | 'company' | 'appliedAt' | 'jobTitle' | 'state' | 'workLocation'>('updatedAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const limit = 20;
 
   const loadApplications = async () => {
     try {
-      const [res, statsRes] = await Promise.all([
+      const [res, statsRes, timelineRes] = await Promise.all([
         applicationsApi.list({
           search: search || undefined,
           state: stateFilter || undefined,
+          sort: sortField,
+          order: sortOrder,
           page,
           limit,
         }),
         applicationsApi.getStats(),
+        applicationsApi.getTimeline(30),
       ]);
       setApplications(res.items);
       setTotalPages(res.totalPages);
       setTotal(res.total);
       setStats(statsRes);
+      setTimeline(timelineRes.timeline);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load applications');
     } finally {
@@ -54,16 +61,39 @@ export function ListPage() {
   };
 
   useEffect(() => {
-    setPage(1); // Reset to page 1 when filters change
-  }, [search, stateFilter]);
+    setPage(1); // Reset to page 1 when filters or sort change
+  }, [search, stateFilter, sortField, sortOrder]);
 
   useEffect(() => {
     loadApplications();
-  }, [search, stateFilter, page]);
+  }, [search, stateFilter, sortField, sortOrder, page]);
 
   if (loading) {
     return <LoadingScreen message="Loading applications..." />;
   }
+
+  const handleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
+  };
+
+  const SortHeader = ({ field, children, className = '' }: { field: typeof sortField; children: React.ReactNode; className?: string }) => (
+    <th
+      onClick={() => handleSort(field)}
+      className={`px-4 py-3 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 select-none ${className}`}
+    >
+      <span className="flex items-center gap-1">
+        {children}
+        {sortField === field && (
+          <span className="text-blue-400">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+        )}
+      </span>
+    </th>
+  );
 
   return (
     <div>
@@ -84,6 +114,43 @@ export function ListPage() {
             <div className="text-sm text-gray-400 mb-1">Passed On</div>
             <div className="text-3xl font-bold text-red-400">{stats.passedOn}</div>
             <div className="text-xs text-gray-500 mt-1">Rejected, ghosted, or declined</div>
+          </div>
+        </div>
+      )}
+
+      {/* Activity Timeline */}
+      {timeline.length > 0 && (
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-6">
+          <div className="text-sm text-gray-400 mb-3">Applications Applied (Last 30 Days)</div>
+          <div className="flex items-end gap-1" style={{ height: '64px' }}>
+            {timeline.map((day) => {
+              const maxCount = Math.max(...timeline.map(d => d.count), 1);
+              const heightPx = day.count > 0 ? Math.max((day.count / maxCount) * 64, 8) : 2;
+              const date = new Date(day.date);
+              const isToday = new Date().toISOString().split('T')[0] === day.date;
+              return (
+                <div
+                  key={day.date}
+                  className="flex-1 flex items-end group relative"
+                  style={{ height: '64px' }}
+                >
+                  <div
+                    className={`w-full rounded-t transition-all ${
+                      day.count > 0 ? 'bg-blue-500 hover:bg-blue-400' : 'bg-gray-700'
+                    } ${isToday ? 'ring-2 ring-blue-300' : ''}`}
+                    style={{ height: `${heightPx}px` }}
+                  />
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                    {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}: {day.count} app{day.count !== 1 ? 's' : ''}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex justify-between mt-2 text-xs text-gray-500">
+            <span>{new Date(timeline[0]?.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+            <span>Today</span>
           </div>
         </div>
       )}
@@ -150,12 +217,12 @@ export function ListPage() {
           <table className="w-full table-fixed">
             <thead className="bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">Company</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-2/6">Job Title</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/12">Location</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">State</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">Applied</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/6">Updated</th>
+                <SortHeader field="company" className="w-1/6">Company</SortHeader>
+                <SortHeader field="jobTitle" className="w-2/6">Job Title</SortHeader>
+                <SortHeader field="workLocation" className="w-1/12">Location</SortHeader>
+                <SortHeader field="state" className="w-1/6">State</SortHeader>
+                <SortHeader field="appliedAt" className="w-1/6">Applied</SortHeader>
+                <SortHeader field="updatedAt" className="w-1/6">Updated</SortHeader>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">

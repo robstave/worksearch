@@ -21,8 +21,8 @@ This project is built using a spec-kit-driven design.
 ### Admin actions
 
 - Admin-only “maintenance” actions
-	- Export all data (useful for backups)
-	- Reset/clear database (dangerous; require confirmations)
+  - Export all data (useful for backups)
+  - Reset/clear database (dangerous; require confirmations)
 
 ### UI/UX
 

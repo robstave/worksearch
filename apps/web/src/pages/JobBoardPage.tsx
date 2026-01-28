@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { jobBoardsApi } from '../api';
 import type { JobBoard } from '../api';
+import { LoadingScreen } from '@/components/ui/spinner';
 
 export function JobBoardPage() {
   const { id } = useParams<{ id: string }>();
@@ -87,11 +88,7 @@ export function JobBoardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading...</div>
-      </div>
-    );
+    return <LoadingScreen message="Loading job board..." />;
   }
 
   return (

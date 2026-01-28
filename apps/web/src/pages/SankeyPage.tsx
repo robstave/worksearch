@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { applicationsApi } from '../api';
+import { LoadingScreen } from '@/components/ui/spinner';
 
 export function SankeyPage() {
   const [data, setData] = useState<{
@@ -25,11 +26,7 @@ export function SankeyPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading...</div>
-      </div>
-    );
+    return <LoadingScreen message="Loading analytics..." />;
   }
 
   if (error) {

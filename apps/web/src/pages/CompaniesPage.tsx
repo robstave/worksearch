@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { companiesApi } from '../api';
 import type { Company } from '../api';
+import { LoadingScreen } from '@/components/ui/spinner';
 
 export function CompaniesPage() {
   const navigate = useNavigate();
@@ -63,11 +64,7 @@ export function CompaniesPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading...</div>
-      </div>
-    );
+    return <LoadingScreen message="Loading companies..." />;
   }
 
   return (

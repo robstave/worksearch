@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { applicationsApi } from '../api';
 import type { Application, AppState } from '../api';
+import { LoadingScreen } from '@/components/ui/spinner';
 
 const COLUMNS: { state: AppState; label: string; color: string }[] = [
   { state: 'INTERESTED', label: 'Interested', color: 'bg-blue-500' },
@@ -221,11 +222,7 @@ export function BoardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading...</div>
-      </div>
-    );
+    return <LoadingScreen message="Loading board..." />;
   }
 
   const appsByState = COLUMNS.reduce(

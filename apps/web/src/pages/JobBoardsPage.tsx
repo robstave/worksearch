@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { jobBoardsApi } from '../api';
 import type { JobBoard } from '../api';
+import { LoadingScreen } from '@/components/ui/spinner';
 
 export function JobBoardsPage() {
   const navigate = useNavigate();
@@ -25,11 +26,7 @@ export function JobBoardsPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading...</div>
-      </div>
-    );
+    return <LoadingScreen message="Loading job boards..." />;
   }
 
   return (

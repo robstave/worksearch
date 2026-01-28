@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { applicationsApi, companiesApi } from '../api';
-import type { Application, AppState, Company, WorkLocationType } from '../api';
+import type { ApplicationDetail, AppState, Company, WorkLocationType } from '../api';
+import { LoadingScreen } from '@/components/ui/spinner';
 
 const STATE_COLORS: Record<AppState, string> = {
   INTERESTED: 'bg-blue-500',
@@ -34,7 +35,7 @@ export function ApplicationPage() {
   const location = useLocation();
   const isNew = id === 'new';
 
-  const [application, setApplication] = useState<Application | null>(null);
+  const [application, setApplication] = useState<ApplicationDetail | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -174,11 +175,7 @@ export function ApplicationPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading...</div>
-      </div>
-    );
+    return <LoadingScreen message="Loading application..." />;
   }
 
   const allowedMoves = application ? ALLOWED_TRANSITIONS[application.currentState] : [];
@@ -437,6 +434,51 @@ export function ApplicationPage() {
             </button>
           </div>
         </div>
+
+        {/* Transition History */}
+        {!isNew && application && application.transitions.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-gray-700">
+            <h3 className="text-lg font-medium text-white mb-4">Transition History</h3>
+            <div className="bg-gray-700 rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-600">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Date</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">From</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">To</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Note</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-600">
+                  {application.transitions.map((t) => (
+                    <tr key={t.id}>
+                      <td className="px-4 py-2 text-sm text-gray-300">
+                        {new Date(t.transitionedAt).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2">
+                        {t.fromState ? (
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white ${STATE_COLORS[t.fromState]}`}>
+                            {t.fromState}
+                          </span>
+                        ) : (
+                          <span className="text-gray-500 text-sm">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white ${STATE_COLORS[t.toState]}`}>
+                          {t.toState}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-400">
+                        {t.note || '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

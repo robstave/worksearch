@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { applicationsApi } from '../api';
 import type { Application, AppState } from '../api';
+import { LoadingScreen } from '@/components/ui/spinner';
 
 const STATE_COLORS: Record<AppState, string> = {
   INTERESTED: 'bg-blue-500',
@@ -43,11 +44,7 @@ export function ListPage() {
   }, [search, stateFilter]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-400">Loading...</div>
-      </div>
-    );
+    return <LoadingScreen message="Loading applications..." />;
   }
 
   return (

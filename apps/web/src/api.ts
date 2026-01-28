@@ -160,7 +160,7 @@ export const applicationsApi = {
     workLocation?: WorkLocationType;
     initialState?: AppState;
   }) => request<Application>('/applications', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType }) =>
+  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType; appliedAt?: string }) =>
     request<Application>(`/applications/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   move: (id: string, toState: AppState, note?: string) =>
     request<{ applicationId: string; fromState: AppState; toState: AppState; transitionedAt: string }>(
@@ -182,6 +182,9 @@ export const applicationsApi = {
     interviewed: number;
     passedOn: number;
   }>('/applications/analytics/stats'),
+  getTimeline: (days = 30) => request<{
+    timeline: Array<{ date: string; count: number }>;
+  }>(`/applications/analytics/timeline?days=${days}`),
 };
 
 // Job Boards

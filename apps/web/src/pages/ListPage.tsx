@@ -26,6 +26,10 @@ export function ListPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [stateFilter, setStateFilter] = useState<AppState | ''>('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 20;
 
   const loadApplications = async () => {
     try {
@@ -33,10 +37,14 @@ export function ListPage() {
         applicationsApi.list({
           search: search || undefined,
           state: stateFilter || undefined,
+          page,
+          limit,
         }),
         applicationsApi.getStats(),
       ]);
       setApplications(res.items);
+      setTotalPages(res.totalPages);
+      setTotal(res.total);
       setStats(statsRes);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load applications');
@@ -46,8 +54,12 @@ export function ListPage() {
   };
 
   useEffect(() => {
-    loadApplications();
+    setPage(1); // Reset to page 1 when filters change
   }, [search, stateFilter]);
+
+  useEffect(() => {
+    loadApplications();
+  }, [search, stateFilter, page]);
 
   if (loading) {
     return <LoadingScreen message="Loading applications..." />;
@@ -181,6 +193,34 @@ export function ListPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-gray-400">
+            Showing {(page - 1) * limit + 1} - {Math.min(page * limit, total)} of {total} applications
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-1 text-gray-300">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -62,13 +62,23 @@ export interface CompanyDetail extends Company {
   }[];
 }
 
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export const companiesApi = {
-  list: (search?: string, tag?: string) => {
+  list: (options?: { search?: string; tag?: string; page?: number; limit?: number }) => {
     const params = new URLSearchParams();
-    if (search) params.set('search', search);
-    if (tag) params.set('tag', tag);
+    if (options?.search) params.set('search', options.search);
+    if (options?.tag) params.set('tag', options.tag);
+    if (options?.page) params.set('page', options.page.toString());
+    if (options?.limit) params.set('limit', options.limit.toString());
     const query = params.toString();
-    return request<{ items: Company[] }>(`/companies${query ? `?${query}` : ''}`);
+    return request<PaginatedResponse<Company>>(`/companies${query ? `?${query}` : ''}`);
   },
   get: (id: string) => request<CompanyDetail>(`/companies/${id}`),
   create: (data: { name: string; website?: string }) =>
@@ -129,13 +139,17 @@ export const applicationsApi = {
     state?: AppState;
     companyId?: string;
     search?: string;
+    page?: number;
+    limit?: number;
   }) => {
     const params = new URLSearchParams();
     if (options?.state) params.set('state', options.state);
     if (options?.companyId) params.set('companyId', options.companyId);
     if (options?.search) params.set('search', options.search);
+    if (options?.page) params.set('page', options.page.toString());
+    if (options?.limit) params.set('limit', options.limit.toString());
     const query = params.toString();
-    return request<{ items: Application[] }>(`/applications${query ? `?${query}` : ''}`);
+    return request<PaginatedResponse<Application>>(`/applications${query ? `?${query}` : ''}`);
   },
   get: (id: string) => request<ApplicationDetail>(`/applications/${id}`),
   create: (data: {

@@ -2,8 +2,8 @@ import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from './auth';
 
 const NAV_ITEMS = [
-  { path: '/applications/board', label: 'Board' },
   { path: '/applications/list', label: 'List' },
+  { path: '/applications/board', label: 'Board' },
   { path: '/analytics/sankey', label: 'Analytics' },
   { path: '/companies', label: 'Companies' },
   { path: '/job-boards', label: 'Job Boards' },

@@ -12,11 +12,17 @@ export function CompaniesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newName, setNewName] = useState('');
   const [newWebsite, setNewWebsite] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 20;
 
   const loadCompanies = async () => {
     try {
-      const res = await companiesApi.list();
+      const res = await companiesApi.list({ page, limit });
       setCompanies(res.items);
+      setTotalPages(res.totalPages);
+      setTotal(res.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load companies');
     } finally {
@@ -26,7 +32,7 @@ export function CompaniesPage() {
 
   useEffect(() => {
     loadCompanies();
-  }, []);
+  }, [page]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,13 +167,41 @@ export function CompaniesPage() {
         </div>
       )}
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-gray-400">
+            Showing {(page - 1) * limit + 1} - {Math.min(page * limit, total)} of {total} companies
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-1 text-gray-300">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowAddModal(false)}>
           <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-xl font-bold text-white mb-4">Add Company</h2>
             <form onSubmit={handleAdd}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
+                <label className="block text-left text-sm font-medium text-gray-300 mb-1">Name</label>
                 <input
                   type="text"
                   value={newName}
@@ -178,7 +212,7 @@ export function CompaniesPage() {
                 />
               </div>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-300 mb-1">Website (optional)</label>
+                <label className="block text-left text-sm font-medium text-gray-300 mb-1">Website (optional)</label>
                 <input
                   type="text"
                   value={newWebsite}

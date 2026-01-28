@@ -243,8 +243,8 @@ export function ApplicationPage() {
 
       <div className="bg-gray-800 rounded-lg p-6">
         {/* Header */}
-        <div className="flex items-start justify-between mb-6">
-          <div>
+        <div className="flex items-start gap-4 mb-6">
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-white">
               {isNew ? 'New Application' : application?.company.name}
             </h1>
@@ -280,7 +280,7 @@ export function ApplicationPage() {
           {/* Company (only for new) */}
           {isNew && (
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label className="block text-left text-sm font-medium text-gray-300 mb-1">
                 Company <span className="text-red-400">*</span>
               </label>
               <select
@@ -308,7 +308,7 @@ export function ApplicationPage() {
 
           {/* Job Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-left text-sm font-medium text-gray-300 mb-1">
               Job Title <span className="text-red-400">*</span>
             </label>
             <input
@@ -322,7 +322,7 @@ export function ApplicationPage() {
 
           {/* Job URL */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-left text-sm font-medium text-gray-300 mb-1">
               Job Posting URL
             </label>
             <input
@@ -336,7 +336,7 @@ export function ApplicationPage() {
 
           {/* Work Location */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-left text-sm font-medium text-gray-300 mb-1">
               Work Location
             </label>
             <select
@@ -354,7 +354,7 @@ export function ApplicationPage() {
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Tags</label>
+            <label className="block text-left text-sm font-medium text-gray-300 mb-1">Tags</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {tags.map((tag) => (
                 <span
@@ -394,7 +394,7 @@ export function ApplicationPage() {
           {/* Description / Notes */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-gray-300">
+              <label className="block text-left text-sm font-medium text-gray-300">
                 Description / Notes
               </label>
               {!isNew && (

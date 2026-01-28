@@ -9,7 +9,7 @@ All timestamps are ISO-8601 strings.
 
 ### State
 
-INTERESTED | APPLIED | SCREENING | INTERVIEW | OFFER | ACCEPTED | REJECTED | GHOSTED | TRASH
+INTERESTED | APPLIED | SCREENING | INTERVIEW | OFFER | ACCEPTED | DECLINED | REJECTED | GHOSTED | TRASH
 
 ### Role
 
@@ -68,6 +68,44 @@ Response 200:
 
 { "items": [ { "id": "string", "email": "string", "role": "admin|user" } ] }
 
+## Admin / Maintenance (admin only)
+
+GET /admin/export
+
+Exports all data (companies, applications, transitions, job boards, tags) for backup.
+
+Query:
+
+- format: json|csv (default json)
+
+Response 200:
+
+- For json: application/json (or a file download)
+- For csv: text/csv (may be multiple files or a zip; implementation-defined)
+
+POST /admin/import
+
+Imports data from a previous export (optional feature).
+
+Request:
+
+- format: json
+- payload: export bundle
+
+Response 200:
+
+{ "ok": true }
+
+POST /admin/reset
+
+DANGEROUS. Clears database data for the current environment.
+
+Safety requirements:
+
+- Require admin role
+- Require explicit confirmation flag (e.g. { "confirm": true })
+- Consider a second confirmation (e.g. "confirmText": "RESET")
+
 ## Companies
 
 GET /companies
@@ -75,6 +113,8 @@ Query:
 
 - search (optional)
 - tag (optional, company tag name)
+- sort (optional): name|applicationCount|createdAt
+- order (optional): asc|desc
 
 Response 200:
 {
@@ -154,6 +194,8 @@ tag: application tag name
 search: search company name + job title
 
 sort: updatedAt|company|ageInState (default updatedAt)
+
+Additional sort fields (optional): appliedAt|jobTitle|state|workLocation
 
 order: asc|desc (default desc)
 

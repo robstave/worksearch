@@ -130,7 +130,17 @@ export function CompaniesPage() {
                       <span className="text-gray-500">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-300">{company.applicationCount}</td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/applications/list?search=${encodeURIComponent(company.name)}`);
+                      }}
+                      className="text-blue-400 hover:text-blue-300 hover:underline"
+                    >
+                      {company.applicationCount}
+                    </button>
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex gap-3 justify-end">
                       <button

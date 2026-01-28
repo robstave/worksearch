@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { applicationsApi } from '../api';
 import type { Application, AppState } from '../api';
 
@@ -17,10 +17,11 @@ const STATE_COLORS: Record<AppState, string> = {
 
 export function ListPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
   const [stateFilter, setStateFilter] = useState<AppState | ''>('');
 
   const loadApplications = async () => {
@@ -130,8 +131,14 @@ export function ListPage() {
                 >
                   <td className="px-4 py-3 text-left text-white font-medium">{app.company.name}</td>
                   <td className="px-4 py-3 text-left text-gray-300">{app.jobTitle}</td>
-                  <td className="px-4 py-3 text-left text-gray-400 text-sm">
-                    {app.workLocation || '—'}
+                  <td className="px-4 py-3 text-left">
+                    {app.workLocation ? (
+                      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white bg-gray-600">
+                        {app.workLocation}
+                      </span>
+                    ) : (
+                      <span className="text-gray-500 text-sm">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-left">
                     <span

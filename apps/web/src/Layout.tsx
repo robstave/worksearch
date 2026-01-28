@@ -31,8 +31,9 @@ export function Layout() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex h-14 items-center justify-between">
             <div className="flex items-center gap-8">
-              <Link to="/" className="text-xl font-bold text-white">
-                🔍 WorkSearch
+              <Link to="/" className="flex items-center gap-2 text-xl font-bold text-white">
+                <img src="/cat.png" alt="WorkSearch" className="w-8 h-8" />
+                WorkSearch
               </Link>
               <div className="flex gap-1">
                 {NAV_ITEMS.map((item) => (

@@ -11,6 +11,7 @@ const STATE_COLORS: Record<AppState, string> = {
   INTERVIEW: 'bg-green-500',
   OFFER: 'bg-emerald-500',
   ACCEPTED: 'bg-teal-500',
+  DECLINED: 'bg-orange-500',
   REJECTED: 'bg-red-500',
   GHOSTED: 'bg-gray-500',
   TRASH: 'bg-gray-700',
@@ -20,6 +21,7 @@ export function ListPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [applications, setApplications] = useState<Application[]>([]);
+  const [stats, setStats] = useState<{ applied: number; interviewed: number; passedOn: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState(searchParams.get('search') || '');
@@ -27,11 +29,15 @@ export function ListPage() {
 
   const loadApplications = async () => {
     try {
-      const res = await applicationsApi.list({
-        search: search || undefined,
-        state: stateFilter || undefined,
-      });
+      const [res, statsRes] = await Promise.all([
+        applicationsApi.list({
+          search: search || undefined,
+          state: stateFilter || undefined,
+        }),
+        applicationsApi.getStats(),
+      ]);
       setApplications(res.items);
+      setStats(statsRes);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load applications');
     } finally {
@@ -49,6 +55,27 @@ export function ListPage() {
 
   return (
     <div>
+      {/* Dashboard Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+            <div className="text-sm text-gray-400 mb-1">Applied</div>
+            <div className="text-3xl font-bold text-yellow-400">{stats.applied}</div>
+            <div className="text-xs text-gray-500 mt-1">Total applications submitted</div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+            <div className="text-sm text-gray-400 mb-1">Interviewed</div>
+            <div className="text-3xl font-bold text-purple-400">{stats.interviewed}</div>
+            <div className="text-xs text-gray-500 mt-1">Made it to screening+</div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+            <div className="text-sm text-gray-400 mb-1">Passed On</div>
+            <div className="text-3xl font-bold text-red-400">{stats.passedOn}</div>
+            <div className="text-xs text-gray-500 mt-1">Rejected, ghosted, or declined</div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-white">Applications List</h1>
         <div className="flex items-center gap-4">

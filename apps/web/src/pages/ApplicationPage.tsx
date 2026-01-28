@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { applicationsApi, companiesApi } from '../api';
 import type { ApplicationDetail, AppState, Company, WorkLocationType } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
+import { Button } from '@/components/ui/button';
 
 const STATE_COLORS: Record<AppState, string> = {
   INTERESTED: 'bg-blue-500',
@@ -12,6 +13,7 @@ const STATE_COLORS: Record<AppState, string> = {
   INTERVIEW: 'bg-green-500',
   OFFER: 'bg-emerald-500',
   ACCEPTED: 'bg-teal-500',
+  DECLINED: 'bg-orange-500',
   REJECTED: 'bg-red-500',
   GHOSTED: 'bg-gray-500',
   TRASH: 'bg-gray-700',
@@ -22,8 +24,9 @@ const ALLOWED_TRANSITIONS: Record<AppState, AppState[]> = {
   APPLIED: ['SCREENING', 'REJECTED', 'GHOSTED', 'TRASH'],
   SCREENING: ['INTERVIEW', 'REJECTED', 'GHOSTED', 'TRASH'],
   INTERVIEW: ['OFFER', 'REJECTED', 'GHOSTED', 'TRASH'],
-  OFFER: ['ACCEPTED', 'REJECTED', 'GHOSTED'],
+  OFFER: ['ACCEPTED', 'DECLINED', 'REJECTED', 'GHOSTED'],
   ACCEPTED: [],
+  DECLINED: [],
   REJECTED: [],
   GHOSTED: [],
   TRASH: [],
@@ -50,6 +53,11 @@ export function ApplicationPage() {
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+
+  // Transition editing state
+  const [editingTransitionId, setEditingTransitionId] = useState<string | null>(null);
+  const [editingTransitionDate, setEditingTransitionDate] = useState('');
+  const [editingTransitionNote, setEditingTransitionNote] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -98,6 +106,41 @@ export function ApplicationPage() {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleAddTag();
+    }
+  };
+
+  const handleEditTransition = (transitionId: string, transitionedAt: string, note: string | null) => {
+    setEditingTransitionId(transitionId);
+    // Format date for datetime-local input: YYYY-MM-DDTHH:mm
+    const date = new Date(transitionedAt);
+    const formattedDate = date.toISOString().slice(0, 16);
+    setEditingTransitionDate(formattedDate);
+    setEditingTransitionNote(note || '');
+  };
+
+  const handleCancelEditTransition = () => {
+    setEditingTransitionId(null);
+    setEditingTransitionDate('');
+    setEditingTransitionNote('');
+  };
+
+  const handleSaveTransition = async () => {
+    if (!editingTransitionId || !id) return;
+    
+    setSaving(true);
+    try {
+      await applicationsApi.updateTransition(id, editingTransitionId, {
+        transitionedAt: new Date(editingTransitionDate).toISOString(),
+        note: editingTransitionNote.trim() || undefined,
+      });
+      // Reload application to show updated transition
+      const updated = await applicationsApi.get(id);
+      setApplication(updated);
+      handleCancelEditTransition();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update transition');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -447,33 +490,85 @@ export function ApplicationPage() {
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">From</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">To</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Note</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-600">
-                  {application.transitions.map((t) => (
-                    <tr key={t.id}>
-                      <td className="px-4 py-2 text-sm text-gray-300">
-                        {new Date(t.transitionedAt).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-2">
-                        {t.fromState ? (
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white ${STATE_COLORS[t.fromState]}`}>
-                            {t.fromState}
+                  {application.transitions.map((t) => {
+                    const isEditing = editingTransitionId === t.id;
+                    return (
+                      <tr key={t.id}>
+                        <td className="px-4 py-2 text-sm text-gray-300">
+                          {isEditing ? (
+                            <input
+                              type="datetime-local"
+                              value={editingTransitionDate}
+                              onChange={(e) => setEditingTransitionDate(e.target.value)}
+                              className="w-full px-2 py-1 bg-gray-600 text-white rounded border border-gray-500 text-sm"
+                            />
+                          ) : (
+                            new Date(t.transitionedAt).toLocaleString()
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          {t.fromState ? (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white ${STATE_COLORS[t.fromState]}`}>
+                              {t.fromState}
+                            </span>
+                          ) : (
+                            <span className="text-gray-500 text-sm">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white ${STATE_COLORS[t.toState]}`}>
+                            {t.toState}
                           </span>
-                        ) : (
-                          <span className="text-gray-500 text-sm">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white ${STATE_COLORS[t.toState]}`}>
-                          {t.toState}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-sm text-gray-400">
-                        {t.note || '—'}
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-400">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={editingTransitionNote}
+                              onChange={(e) => setEditingTransitionNote(e.target.value)}
+                              placeholder="Optional note"
+                              className="w-full px-2 py-1 bg-gray-600 text-white rounded border border-gray-500 text-sm"
+                            />
+                          ) : (
+                            t.note || '—'
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          {isEditing ? (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={handleSaveTransition}
+                                disabled={saving}
+                              >
+                                Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleCancelEditTransition}
+                                disabled={saving}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditTransition(t.id, t.transitionedAt, t.note)}
+                            >
+                              Edit
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

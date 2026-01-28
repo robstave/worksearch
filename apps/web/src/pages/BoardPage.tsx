@@ -11,6 +11,7 @@ const COLUMNS: { state: AppState; label: string; color: string }[] = [
   { state: 'INTERVIEW', label: 'Interview', color: 'bg-green-500' },
   { state: 'OFFER', label: 'Offer', color: 'bg-emerald-500' },
   { state: 'ACCEPTED', label: 'Accepted', color: 'bg-teal-500' },
+  { state: 'DECLINED', label: 'Declined', color: 'bg-orange-500' },
   { state: 'REJECTED', label: 'Rejected', color: 'bg-red-500' },
   { state: 'GHOSTED', label: 'Ghosted', color: 'bg-gray-500' },
   { state: 'TRASH', label: 'Trash', color: 'bg-gray-700' },

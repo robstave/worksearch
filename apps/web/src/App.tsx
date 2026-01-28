@@ -27,7 +27,7 @@ function App() {
               <Route path="/companies" element={<CompaniesPage />} />
               <Route path="/job-boards" element={<JobBoardsPage />} />
               <Route path="/job-boards/:id" element={<JobBoardPage />} />
-              <Route path="/" element={<Navigate to="/applications/board" replace />} />
+              <Route path="/" element={<Navigate to="/applications/list" replace />} />
             </Route>
           </Routes>
         </AuthProvider>

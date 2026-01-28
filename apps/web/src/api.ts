@@ -86,6 +86,7 @@ export type AppState =
   | 'INTERVIEW'
   | 'OFFER'
   | 'ACCEPTED'
+  | 'DECLINED'
   | 'REJECTED'
   | 'GHOSTED'
   | 'TRASH';
@@ -152,11 +153,21 @@ export const applicationsApi = {
       `/applications/${id}/move`,
       { method: 'POST', body: JSON.stringify({ toState, note }) }
     ),
+  updateTransition: (applicationId: string, transitionId: string, data: { transitionedAt?: string; note?: string }) =>
+    request<{ id: string; transitionedAt: string; note: string | null }>(
+      `/applications/${applicationId}/transitions/${transitionId}`,
+      { method: 'PATCH', body: JSON.stringify(data) }
+    ),
   delete: (id: string) => request<void>(`/applications/${id}`, { method: 'DELETE' }),
   getSankeyData: () => request<{
     nodes: Array<{ name: string }>;
     links: Array<{ source: number; target: number; value: number }>;
   }>('/applications/analytics/sankey'),
+  getStats: () => request<{
+    applied: number;
+    interviewed: number;
+    passedOn: number;
+  }>('/applications/analytics/stats'),
 };
 
 // Job Boards

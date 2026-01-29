@@ -9,6 +9,10 @@ const NAV_ITEMS = [
   { path: '/job-boards', label: 'Job Boards' },
 ];
 
+const ADMIN_NAV_ITEMS = [
+  { path: '/admin/users', label: 'Users' },
+];
+
 export function Layout() {
   const { user, logout, loading } = useAuth();
   const location = useLocation();
@@ -49,6 +53,24 @@ export function Layout() {
                     {item.label}
                   </Link>
                 ))}
+                {user.role === 'admin' && (
+                  <>
+                    <span className="mx-1 text-gray-600">|</span>
+                    {ADMIN_NAV_ITEMS.map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                          location.pathname === item.path
+                            ? 'bg-red-700 text-white'
+                            : 'text-red-400 hover:bg-red-700 hover:text-white'
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-4">

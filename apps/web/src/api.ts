@@ -29,7 +29,7 @@ async function request<T>(
 export interface User {
   id: string;
   email: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'aiuser' | 'user';
 }
 
 export const authApi = {
@@ -217,4 +217,34 @@ export const jobBoardsApi = {
   update: (id: string, data: { name?: string; link?: string; notesMd?: string }) =>
     request<JobBoard>(`/job-boards/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   delete: (id: string) => request<void>(`/job-boards/${id}`, { method: 'DELETE' }),
+};
+
+// Admin (requires admin role)
+export interface AdminUser {
+  id: string;
+  email: string;
+  role: 'admin' | 'aiuser' | 'user';
+  createdAt: string;
+  updatedAt: string;
+  companiesCount: number;
+  applicationsCount: number;
+  jobBoardsCount?: number;
+}
+
+export const adminApi = {
+  listUsers: () => request<AdminUser[]>('/admin/users'),
+  getUser: (id: string) => request<AdminUser>(`/admin/users/${id}`),
+  createUser: (data: { email: string; password: string; role?: 'admin' | 'aiuser' | 'user' }) =>
+    request<AdminUser>('/admin/users', { method: 'POST', body: JSON.stringify(data) }),
+  updateUser: (id: string, data: { email?: string; role?: 'admin' | 'aiuser' | 'user' }) =>
+    request<AdminUser>(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  setPassword: (id: string, password: string) =>
+    request<{ message: string }>(`/admin/users/${id}/set-password`, {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    }),
+  deleteUser: (id: string) =>
+    request<{ message: string }>(`/admin/users/${id}`, { method: 'DELETE' }),
+  clearUserData: (id: string) =>
+    request<{ message: string }>(`/admin/users/${id}/clear-data`, { method: 'POST' }),
 };

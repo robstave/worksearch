@@ -24,3 +24,8 @@ Specs live in /docs.
 - API: `http://localhost:${API_PORT:-3000}/api`
 - Web: `http://localhost:${WEB_PORT:-5173}`
 
+4) Login credentials (dev):
+
+- `admin@worksearch.local` / `admin123`
+- `demo@worksearch.local` / `demo123`
+

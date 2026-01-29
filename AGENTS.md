@@ -25,8 +25,13 @@ docker compose logs -f api
 docker compose logs -f web
 
 # Login credentials (dev)
+# Admin
 # Email: admin@worksearch.local
 # Password: admin123
+#
+# Demo
+# Email: demo@worksearch.local
+# Password: demo123
 ```
 
 ## Project Structure
@@ -42,7 +47,7 @@ apps/
       prisma/    # PrismaService
     prisma/
       schema.prisma
-      seed.ts    # Creates admin user
+      seed.ts    # Creates default users (admin + demo)
   web/           # React/Vite frontend (port 5173)
     src/
       api.ts     # Typed API client
@@ -76,6 +81,7 @@ docs/
 | Applied Date | ✅ | ✅ | Captured on APPLIED transition |
 | Job Boards | ✅ | ✅ | Save job board bookmarks with markdown notes |
 | Work Location Type | ✅ | ✅ | REMOTE/ONSITE/HYBRID/CONTRACT enum field |
+| Admin User CRUD | ✅ | ✅ | Full admin panel at /admin/users |
 
 ### 🔲 Not Yet Implemented
 
@@ -89,7 +95,8 @@ docs/
 | Export/Import CSV | Low | |
 | Mobile polish | Low | Board scrollable but could improve |
 | E2E Tests | Medium | |
-| Password change | Medium | User settings |
+| Self-Service Password | Medium | User changes own password |
+| Company AI Autofill | Medium | LLM-powered company info lookup |
 
 ## Key Technical Decisions
 
@@ -137,7 +144,24 @@ POST   /api/job-boards     { name, link?, notesMd? }
 GET    /api/job-boards/:id
 PATCH  /api/job-boards/:id { name?, link?, notesMd? }
 DELETE /api/job-boards/:id
+
+# Admin (requires admin role)
+GET    /api/admin/users
+POST   /api/admin/users    { email, password, role? }
+GET    /api/admin/users/:id
+PATCH  /api/admin/users/:id { email?, role? }
+POST   /api/admin/users/:id/set-password { password }
+DELETE /api/admin/users/:id
+POST   /api/admin/users/:id/clear-data
 ```
+
+## User Roles
+
+| Role | Description |
+|------|-------------|
+| `admin` | Full access + admin panel (user CRUD) |
+| `aiuser` | All user features + AI features (future) |
+| `user` | Standard access: companies, applications, job boards |
 
 ## Common Tasks
 

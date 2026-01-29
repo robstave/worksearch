@@ -10,6 +10,7 @@ import { ApplicationPage } from './pages/ApplicationPage';
 import { JobBoardsPage } from './pages/JobBoardsPage';
 import { JobBoardPage } from './pages/JobBoardPage';
 import { SankeyPage } from './pages/SankeyPage';
+import { AdminUsersPage } from './pages/AdminUsersPage';
 import './App.css';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
               <Route path="/companies" element={<CompaniesPage />} />
               <Route path="/job-boards" element={<JobBoardsPage />} />
               <Route path="/job-boards/:id" element={<JobBoardPage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/" element={<Navigate to="/applications/list" replace />} />
             </Route>
           </Routes>

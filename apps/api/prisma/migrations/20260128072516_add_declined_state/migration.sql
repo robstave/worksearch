@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "AppState" ADD VALUE 'DECLINED';

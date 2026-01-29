@@ -1,0 +1,193 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  aiuser
+  user
+}
+
+enum AppState {
+  INTERESTED
+  APPLIED
+  SCREENING
+  INTERVIEW
+  OFFER
+  ACCEPTED
+  DECLINED
+  REJECTED
+  GHOSTED
+  TRASH
+}
+
+enum WorkLocationType {
+  REMOTE
+  ONSITE
+  HYBRID
+  CONTRACT
+}
+
+enum EventType {
+  INTERVIEW
+  FOLLOWUP
+  CALL
+  DEADLINE
+  OTHER
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(user)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  companies       Company[]
+  applications    Application[]
+  transitions     StateTransition[] @relation("TransitionActor")
+  companyTags     CompanyTag[]
+  applicationTags ApplicationTag[]
+  jobBoards       JobBoard[]
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  website   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  apps      Application[]
+  tags      CompanyTagMap[]
+
+  @@unique([ownerId, name])
+  @@index([ownerId])
+}
+
+model JobBoard {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  link      String?
+  notesMd   String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+}
+
+model Application {
+  id               String   @id @default(cuid())
+  ownerId          String
+  companyId        String
+
+  jobTitle         String
+  jobReqUrl        String?
+  jobDescriptionMd String
+  tagsList         String[] @default([])
+
+  currentState     AppState @default(INTERESTED)
+  workLocation     WorkLocationType? @default(HYBRID)
+  appliedAt        DateTime?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  owner            User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  company          Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  transitions      StateTransition[]
+  tags             ApplicationTagMap[]
+  events           ApplicationEvent[]
+
+  @@index([ownerId, currentState])
+  @@index([companyId])
+}
+
+model StateTransition {
+  id             String    @id @default(cuid())
+  applicationId  String
+  fromState      AppState?
+  toState        AppState
+  transitionedAt DateTime  @default(now())
+  note           String?
+
+  actorUserId    String?
+
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  actor          User?        @relation("TransitionActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([applicationId, transitionedAt])
+}
+
+model CompanyTag {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  createdAt DateTime @default(now())
+
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  map       CompanyTagMap[]
+
+  @@unique([ownerId, name])
+  @@index([ownerId])
+}
+
+model CompanyTagMap {
+  companyId String
+  tagId     String
+
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tag       CompanyTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([companyId, tagId])
+}
+
+model ApplicationTag {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  createdAt DateTime @default(now())
+
+  owner     User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  map       ApplicationTagMap[]
+
+  @@unique([ownerId, name])
+  @@index([ownerId])
+}
+
+model ApplicationTagMap {
+  applicationId String
+  tagId         String
+
+  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  tag           ApplicationTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([applicationId, tagId])
+}
+
+model ApplicationEvent {
+  id            String    @id @default(cuid())
+  applicationId String
+  type          EventType
+  at            DateTime
+  note          String?
+
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, at])
+}

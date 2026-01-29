@@ -89,9 +89,7 @@ docker compose up -d
 
 ## 📸 Screenshots
 
-<details>
-<summary>Click to expand</summary>
-
+ 
 ### Kanban Board
 *Drag applications between columns as they progress*
 
@@ -112,8 +110,7 @@ docker compose up -d
 
 ![Sankey Diagram](docs/images/ws2-sankey.png)
 
-</details>
-
+ 
 ---
 
 ## 🔄 Application States

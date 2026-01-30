@@ -1,7 +1,7 @@
 # WorkSearch - AI Agent Context
 
 > This file helps AI assistants understand the project state and continue work.
-> Last updated: 2026-01-27
+> Last updated: 2026-01-30
 
 ## Project Overview
 
@@ -57,10 +57,13 @@ apps/
         LoginPage.tsx
         BoardPage.tsx    # Kanban board with drag-drop
         ListPage.tsx     # Table view with filters
-        CompaniesPage.tsx
+        CompaniesPage.tsx    # Companies list with star/revisit flags
+        CompanyPage.tsx      # Company detail/edit with notes + visits
         ApplicationPage.tsx  # Application detail/edit
         JobBoardsPage.tsx    # Job boards list
         JobBoardPage.tsx     # Job board detail/edit
+        AdminUsersPage.tsx   # Admin user management
+        SankeyPage.tsx       # State transition analytics
 docs/
   specs/         # Original requirements
 ```
@@ -72,7 +75,9 @@ docs/
 | Feature | Backend | Frontend | Notes |
 |---------|---------|----------|-------|
 | Auth (login/logout/me) | ✅ | ✅ | Session cookies |
-| Companies CRUD | ✅ | ✅ | With ownership |
+| Companies CRUD | ✅ | ✅ | With ownership, star/revisit flags, markdown notes |
+| Company Detail Page | ✅ | ✅ | Markdown notes, star/revisit toggles, visit history |
+| Company Visits | ✅ | ✅ | Track check-ins with timestamps, notes, status |
 | Applications CRUD | ✅ | ✅ | Full state machine |
 | Kanban Board | ✅ | ✅ | Drag-drop moves |
 | List View | ✅ | ✅ | Search + filter |
@@ -82,6 +87,7 @@ docs/
 | Job Boards | ✅ | ✅ | Save job board bookmarks with markdown notes |
 | Work Location Type | ✅ | ✅ | REMOTE/ONSITE/HYBRID/CONTRACT enum field |
 | Admin User CRUD | ✅ | ✅ | Full admin panel at /admin/users |
+| Sankey Analytics | ✅ | ✅ | State transition flow visualization |
 
 ### 🔲 Not Yet Implemented
 
@@ -127,10 +133,12 @@ POST   /api/auth/logout
 GET    /api/auth/me
 
 GET    /api/companies
-POST   /api/companies      { name, website? }
+POST   /api/companies      { name, website?, notesMd?, star?, revisit? }
 GET    /api/companies/:id
-PATCH  /api/companies/:id  { name?, website? }
+PATCH  /api/companies/:id  { name?, website?, notesMd?, star?, revisit? }
 DELETE /api/companies/:id
+GET    /api/companies/:id/visits
+POST   /api/companies/:id/visits { note?, status? }
 
 GET    /api/applications   ?state=&search=&sort=&order=
 POST   /api/applications   { companyId, jobTitle, jobReqUrl? }

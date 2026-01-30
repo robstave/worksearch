@@ -47,6 +47,9 @@ export interface Company {
   id: string;
   name: string;
   website: string | null;
+  notesMd: string;
+  star: boolean;
+  revisit: boolean;
   tags: string[];
   applicationCount: number;
   createdAt: string;
@@ -62,6 +65,13 @@ export interface CompanyDetail extends Company {
   }[];
 }
 
+export interface CompanyVisit {
+  id: string;
+  visitedAt: string;
+  note: string | null;
+  status: string | null;
+}
+
 export interface PaginatedResponse<T> {
   items: T[];
   total: number;
@@ -71,7 +81,7 @@ export interface PaginatedResponse<T> {
 }
 
 export const companiesApi = {
-  list: (options?: { search?: string; tag?: string; sort?: 'name' | 'applicationCount' | 'createdAt'; order?: 'asc' | 'desc'; page?: number; limit?: number }) => {
+  list: (options?: { search?: string; tag?: string; sort?: 'name' | 'applicationCount' | 'createdAt' | 'star' | 'revisit'; order?: 'asc' | 'desc'; page?: number; limit?: number }) => {
     const params = new URLSearchParams();
     if (options?.search) params.set('search', options.search);
     if (options?.tag) params.set('tag', options.tag);
@@ -83,11 +93,14 @@ export const companiesApi = {
     return request<PaginatedResponse<Company>>(`/companies${query ? `?${query}` : ''}`);
   },
   get: (id: string) => request<CompanyDetail>(`/companies/${id}`),
-  create: (data: { name: string; website?: string }) =>
+  create: (data: { name: string; website?: string; notesMd?: string; star?: boolean; revisit?: boolean }) =>
     request<Company>('/companies', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: { name?: string; website?: string }) =>
+  update: (id: string, data: { name?: string; website?: string; notesMd?: string; star?: boolean; revisit?: boolean }) =>
     request<Company>(`/companies/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   delete: (id: string) => request<void>(`/companies/${id}`, { method: 'DELETE' }),
+  getVisits: (id: string) => request<CompanyVisit[]>(`/companies/${id}/visits`),
+  createVisit: (id: string, data: { note?: string; status?: string }) =>
+    request<CompanyVisit>(`/companies/${id}/visits`, { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // Applications
@@ -121,6 +134,8 @@ export interface Application {
 
 export interface ApplicationDetail extends Application {
   jobDescriptionMd: string;
+  easyApply: boolean;
+  coverLetter: boolean;
   transitions: {
     id: string;
     fromState: AppState | null;
@@ -164,9 +179,11 @@ export const applicationsApi = {
     jobReqUrl?: string;
     jobDescriptionMd?: string;
     workLocation?: WorkLocationType;
+    easyApply?: boolean;
+    coverLetter?: boolean;
     initialState?: AppState;
   }) => request<Application>('/applications', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType; appliedAt?: string }) =>
+  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType; easyApply?: boolean; coverLetter?: boolean; appliedAt?: string }) =>
     request<Application>(`/applications/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   move: (id: string, toState: AppState, note?: string) =>
     request<{ applicationId: string; fromState: AppState; toState: AppState; transitionedAt: string }>(

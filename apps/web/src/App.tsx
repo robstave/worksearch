@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage';
 import { BoardPage } from './pages/BoardPage';
 import { ListPage } from './pages/ListPage';
 import { CompaniesPage } from './pages/CompaniesPage';
+import { CompanyPage } from './pages/CompanyPage';
 import { ApplicationPage } from './pages/ApplicationPage';
 import { JobBoardsPage } from './pages/JobBoardsPage';
 import { JobBoardPage } from './pages/JobBoardPage';
@@ -26,6 +27,7 @@ function App() {
               <Route path="/applications/:id" element={<ApplicationPage />} />
               <Route path="/analytics/sankey" element={<SankeyPage />} />
               <Route path="/companies" element={<CompaniesPage />} />
+              <Route path="/companies/:id" element={<CompanyPage />} />
               <Route path="/job-boards" element={<JobBoardsPage />} />
               <Route path="/job-boards/:id" element={<JobBoardPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />

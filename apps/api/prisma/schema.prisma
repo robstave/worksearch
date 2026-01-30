@@ -65,15 +65,21 @@ model Company {
   ownerId   String
   name      String
   website   String?
+  notesMd   String   @default("")
+  star      Boolean  @default(false)
+  revisit   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner     User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   apps      Application[]
   tags      CompanyTagMap[]
+  visits    CompanyVisit[]
 
   @@unique([ownerId, name])
   @@index([ownerId])
+  @@index([ownerId, star])
+  @@index([ownerId, revisit])
 }
 
 model JobBoard {
@@ -102,6 +108,8 @@ model Application {
 
   currentState     AppState @default(INTERESTED)
   workLocation     WorkLocationType? @default(HYBRID)
+  easyApply        Boolean  @default(false)
+  coverLetter      Boolean  @default(false)
   appliedAt        DateTime?
 
   createdAt        DateTime @default(now())
@@ -168,6 +176,18 @@ model ApplicationTag {
 
   @@unique([ownerId, name])
   @@index([ownerId])
+}
+
+model CompanyVisit {
+  id         String   @id @default(cuid())
+  companyId  String
+  visitedAt  DateTime @default(now())
+  note       String?
+  status     String?  // "no new jobs", "new jobs found", "no interest"
+
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, visitedAt])
 }
 
 model ApplicationTagMap {

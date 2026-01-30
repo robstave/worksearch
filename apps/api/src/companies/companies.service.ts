@@ -4,7 +4,11 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateCompanyDto, UpdateCompanyDto } from './dto/company.dto';
+import {
+  CreateCompanyDto,
+  UpdateCompanyDto,
+  CreateCompanyVisitDto,
+} from './dto/company.dto';
 
 @Injectable()
 export class CompaniesService {
@@ -14,7 +18,7 @@ export class CompaniesService {
     ownerId: string,
     search?: string,
     tag?: string,
-    sort: 'name' | 'applicationCount' | 'createdAt' = 'name',
+    sort: 'name' | 'applicationCount' | 'createdAt' | 'star' | 'revisit' = 'name',
     order: 'asc' | 'desc' = 'asc',
     page = 1,
     limit = 20,
@@ -50,7 +54,11 @@ export class CompaniesService {
           ? { apps: { _count: order } }
           : sort === 'createdAt'
             ? { createdAt: order }
-            : { name: order },
+            : sort === 'star'
+              ? { star: order }
+              : sort === 'revisit'
+                ? { revisit: order }
+                : { name: order },
         skip,
         take: limit,
       }),
@@ -62,6 +70,9 @@ export class CompaniesService {
         id: c.id,
         name: c.name,
         website: c.website,
+        notesMd: c.notesMd,
+        star: c.star,
+        revisit: c.revisit,
         tags: c.tags.map((t) => t.tag.name),
         applicationCount: c._count.apps,
         createdAt: c.createdAt.toISOString(),
@@ -104,6 +115,9 @@ export class CompaniesService {
       id: company.id,
       name: company.name,
       website: company.website,
+      notesMd: company.notesMd,
+      star: company.star,
+      revisit: company.revisit,
       tags: company.tags.map((t) => t.tag.name),
       applications: company.apps.map((a) => ({
         id: a.id,
@@ -131,6 +145,9 @@ export class CompaniesService {
         ownerId,
         name: dto.name,
         website: dto.website ?? null,
+        notesMd: dto.notesMd ?? '',
+        star: dto.star ?? false,
+        revisit: dto.revisit ?? false,
       },
     });
 
@@ -138,6 +155,9 @@ export class CompaniesService {
       id: company.id,
       name: company.name,
       website: company.website,
+      notesMd: company.notesMd,
+      star: company.star,
+      revisit: company.revisit,
       createdAt: company.createdAt.toISOString(),
     };
   }
@@ -167,6 +187,9 @@ export class CompaniesService {
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
         ...(dto.website !== undefined && { website: dto.website }),
+        ...(dto.notesMd !== undefined && { notesMd: dto.notesMd }),
+        ...(dto.star !== undefined && { star: dto.star }),
+        ...(dto.revisit !== undefined && { revisit: dto.revisit }),
       },
     });
 
@@ -174,6 +197,9 @@ export class CompaniesService {
       id: updated.id,
       name: updated.name,
       website: updated.website,
+      notesMd: updated.notesMd,
+      star: updated.star,
+      revisit: updated.revisit,
       createdAt: updated.createdAt.toISOString(),
       updatedAt: updated.updatedAt.toISOString(),
     };
@@ -189,5 +215,58 @@ export class CompaniesService {
     }
 
     await this.prisma.company.delete({ where: { id } });
+  }
+
+  async getVisits(companyId: string, ownerId: string) {
+    // Verify ownership
+    const company = await this.prisma.company.findFirst({
+      where: { id: companyId, ownerId },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Company not found');
+    }
+
+    const visits = await this.prisma.companyVisit.findMany({
+      where: { companyId },
+      orderBy: { visitedAt: 'desc' },
+    });
+
+    return visits.map((v) => ({
+      id: v.id,
+      visitedAt: v.visitedAt.toISOString(),
+      note: v.note,
+      status: v.status,
+    }));
+  }
+
+  async createVisit(
+    companyId: string,
+    ownerId: string,
+    dto: CreateCompanyVisitDto,
+  ) {
+    // Verify ownership
+    const company = await this.prisma.company.findFirst({
+      where: { id: companyId, ownerId },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Company not found');
+    }
+
+    const visit = await this.prisma.companyVisit.create({
+      data: {
+        companyId,
+        note: dto.note ?? null,
+        status: dto.status ?? null,
+      },
+    });
+
+    return {
+      id: visit.id,
+      visitedAt: visit.visitedAt.toISOString(),
+      note: visit.note,
+      status: visit.status,
+    };
   }
 }

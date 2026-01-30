@@ -131,7 +131,7 @@ export function JobBoardPage() {
         <div className="space-y-6">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-left text-sm font-medium text-gray-300 mb-1">
               Name <span className="text-red-400">*</span>
             </label>
             <input
@@ -145,7 +145,7 @@ export function JobBoardPage() {
 
           {/* Link */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-left text-sm font-medium text-gray-300 mb-1">
               Link
             </label>
             <input
@@ -160,7 +160,7 @@ export function JobBoardPage() {
           {/* Notes (Markdown) */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-gray-300">
+              <label className="block text-left text-sm font-medium text-gray-300">
                 Notes
               </label>
               {!isNew && (

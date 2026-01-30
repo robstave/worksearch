@@ -49,6 +49,8 @@ export function ApplicationPage() {
   const [jobTitle, setJobTitle] = useState('');
   const [jobReqUrl, setJobReqUrl] = useState('');
   const [workLocation, setWorkLocation] = useState<WorkLocationType | ''>('HYBRID');
+  const [easyApply, setEasyApply] = useState(false);
+  const [coverLetter, setCoverLetter] = useState(false);
   const [appliedAt, setAppliedAt] = useState('');
   const [description, setDescription] = useState('');
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
@@ -73,6 +75,8 @@ export function ApplicationPage() {
           setJobTitle(app.jobTitle);
           setJobReqUrl(app.jobReqUrl || '');
           setWorkLocation(app.workLocation || '');
+          setEasyApply(app.easyApply || false);
+          setCoverLetter(app.coverLetter || false);
           // Format appliedAt for date input (YYYY-MM-DD)
           if (app.appliedAt) {
             const date = new Date(app.appliedAt);
@@ -171,6 +175,8 @@ export function ApplicationPage() {
           jobTitle: jobTitle.trim(),
           jobReqUrl: jobReqUrl.trim() || undefined,
           workLocation: workLocation || undefined,
+          easyApply,
+          coverLetter,
         });
         // If tags were added, update them
         if (tags.length > 0) {
@@ -182,6 +188,8 @@ export function ApplicationPage() {
           jobTitle: jobTitle.trim(),
           jobReqUrl: jobReqUrl.trim() || undefined,
           workLocation: workLocation || undefined,
+          easyApply,
+          coverLetter,
           appliedAt: appliedAt || undefined,
           jobDescriptionMd: description,
           tags,
@@ -357,6 +365,28 @@ export function ApplicationPage() {
               <option value="HYBRID">Hybrid</option>
               <option value="CONTRACT">Contract</option>
             </select>
+          </div>
+
+          {/* Application Flags */}
+          <div className="flex gap-6">
+            <label className="flex items-center gap-2 text-gray-300 cursor-pointer" title="Easy apply - one-click or quick application">
+              <input
+                type="checkbox"
+                checked={easyApply}
+                onChange={(e) => setEasyApply(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+              />
+              <span>⚡ Easy Apply</span>
+            </label>
+            <label className="flex items-center gap-2 text-gray-300 cursor-pointer" title="Cover letter - application required a cover letter">
+              <input
+                type="checkbox"
+                checked={coverLetter}
+                onChange={(e) => setCoverLetter(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500"
+              />
+              <span>📝 Cover Letter</span>
+            </label>
           </div>
 
           {/* Applied Date (only for existing applications) */}

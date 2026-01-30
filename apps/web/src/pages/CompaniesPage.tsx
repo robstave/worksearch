@@ -29,6 +29,18 @@ const DocumentPlusIcon = () => (
   </svg>
 );
 
+const StarIcon = ({ filled }: { filled: boolean }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" className="w-4 h-4">
+    <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
+  </svg>
+);
+
+const FlagIcon = ({ filled }: { filled: boolean }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" className="w-4 h-4">
+    <path fillRule="evenodd" d="M3.5 2A1.5 1.5 0 002 3.5V18a1 1 0 001 1h1a1 1 0 001-1v-5.5h11.5a1 1 0 001-1.376l-1.5-3a1 1 0 000-.748l1.5-3A1 1 0 0016.5 3H5V2.5A1.5 1.5 0 003.5 2z" clipRule="evenodd" />
+  </svg>
+);
+
 type ModalType = 'add' | 'edit' | null;
 
 export function CompaniesPage() {
@@ -48,7 +60,7 @@ export function CompaniesPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [sortField, setSortField] = useState<'name' | 'applicationCount' | 'createdAt'>('name');
+  const [sortField, setSortField] = useState<'name' | 'applicationCount' | 'createdAt' | 'star' | 'revisit'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const limit = 20;
 
@@ -197,6 +209,12 @@ export function CompaniesPage() {
               <tr>
                 <SortHeader field="name">Name</SortHeader>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Website</th>
+                <SortHeader field="star" className="w-16 text-center">
+                  <span title="Starred companies">⭐</span>
+                </SortHeader>
+                <SortHeader field="revisit" className="w-16 text-center">
+                  <span title="Revisit flagged">🚩</span>
+                </SortHeader>
                 <SortHeader field="applicationCount">Applications</SortHeader>
                 <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">Actions</th>
               </tr>
@@ -204,7 +222,14 @@ export function CompaniesPage() {
             <tbody className="divide-y divide-gray-700">
               {companies.map((company) => (
                 <tr key={company.id} className="hover:bg-gray-750">
-                  <td className="px-4 py-3 text-white font-medium">{company.name}</td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => navigate(`/companies/${company.id}`)}
+                      className="text-white font-medium hover:text-blue-400 hover:underline text-left"
+                    >
+                      {company.name}
+                    </button>
+                  </td>
                   <td className="px-4 py-3">
                     {company.website ? (
                       <a
@@ -218,6 +243,16 @@ export function CompaniesPage() {
                     ) : (
                       <span className="text-gray-500">-</span>
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-center" title={company.star ? 'Starred' : 'Not starred'}>
+                    <span className={company.star ? 'text-yellow-400' : 'text-gray-600'}>
+                      {company.star ? '⭐' : '☆'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center" title={company.revisit ? 'Flagged to revisit' : 'Not flagged'}>
+                    <span className={company.revisit ? 'text-red-400' : 'text-gray-600'}>
+                      {company.revisit ? '🚩' : '⚐'}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <button

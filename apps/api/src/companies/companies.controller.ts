@@ -14,7 +14,11 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { CompaniesService } from './companies.service';
-import { CreateCompanyDto, UpdateCompanyDto } from './dto/company.dto';
+import {
+  CreateCompanyDto,
+  UpdateCompanyDto,
+  CreateCompanyVisitDto,
+} from './dto/company.dto';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('companies')
@@ -27,7 +31,7 @@ export class CompaniesController {
     @Req() req: Request,
     @Query('search') search?: string,
     @Query('tag') tag?: string,
-    @Query('sort') sort?: 'name' | 'applicationCount' | 'createdAt',
+    @Query('sort') sort?: 'name' | 'applicationCount' | 'createdAt' | 'star' | 'revisit',
     @Query('order') order?: 'asc' | 'desc',
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -72,5 +76,22 @@ export class CompaniesController {
   async remove(@Req() req: Request, @Param('id') id: string) {
     const ownerId = (req.session as any).userId;
     await this.companiesService.remove(id, ownerId);
+  }
+
+  @Get(':id/visits')
+  async getVisits(@Req() req: Request, @Param('id') id: string) {
+    const ownerId = (req.session as any).userId;
+    return this.companiesService.getVisits(id, ownerId);
+  }
+
+  @Post(':id/visits')
+  @HttpCode(HttpStatus.CREATED)
+  async createVisit(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() dto: CreateCompanyVisitDto,
+  ) {
+    const ownerId = (req.session as any).userId;
+    return this.companiesService.createVisit(id, ownerId, dto);
   }
 }

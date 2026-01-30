@@ -153,6 +153,8 @@ export class ApplicationsService {
       jobDescriptionMd: app.jobDescriptionMd,
       currentState: app.currentState,
       workLocation: app.workLocation,
+      easyApply: app.easyApply,
+      coverLetter: app.coverLetter,
       tags: app.tagsList,
       transitions: app.transitions.map((t) => ({
         id: t.id,
@@ -192,6 +194,8 @@ export class ApplicationsService {
         jobTitle: dto.jobTitle,
         jobReqUrl: dto.jobReqUrl ?? null,
         workLocation: dto.workLocation ?? null,
+        easyApply: dto.easyApply ?? false,
+        coverLetter: dto.coverLetter ?? false,
         jobDescriptionMd: dto.jobDescriptionMd ?? '',
         currentState: initialState as PrismaAppState,
         transitions: {
@@ -238,6 +242,8 @@ export class ApplicationsService {
         ...(dto.jobDescriptionMd !== undefined && { jobDescriptionMd: dto.jobDescriptionMd }),
         ...(dto.tags !== undefined && { tagsList: dto.tags }),
         ...(dto.workLocation !== undefined && { workLocation: dto.workLocation }),
+        ...(dto.easyApply !== undefined && { easyApply: dto.easyApply }),
+        ...(dto.coverLetter !== undefined && { coverLetter: dto.coverLetter }),
         ...(dto.appliedAt !== undefined && { appliedAt: dto.appliedAt ? new Date(dto.appliedAt) : null }),
       },
       include: {

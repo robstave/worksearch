@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, MinLength, IsArray, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsEnum, MinLength, IsArray, IsDateString, IsBoolean } from 'class-validator';
 
 export enum AppState {
   INTERESTED = 'INTERESTED',
@@ -41,6 +41,14 @@ export class CreateApplicationDto {
   workLocation?: WorkLocationType;
 
   @IsOptional()
+  @IsBoolean()
+  easyApply?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  coverLetter?: boolean;
+
+  @IsOptional()
   @IsEnum(AppState)
   initialState?: AppState;
 }
@@ -67,6 +75,14 @@ export class UpdateApplicationDto {
   @IsOptional()
   @IsEnum(WorkLocationType)
   workLocation?: WorkLocationType;
+
+  @IsOptional()
+  @IsBoolean()
+  easyApply?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  coverLetter?: boolean;
 
   @IsOptional()
   @IsDateString()

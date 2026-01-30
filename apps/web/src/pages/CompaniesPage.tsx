@@ -222,7 +222,7 @@ export function CompaniesPage() {
             <tbody className="divide-y divide-gray-700">
               {companies.map((company) => (
                 <tr key={company.id} className="hover:bg-gray-750">
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-left">
                     <button
                       onClick={() => navigate(`/companies/${company.id}`)}
                       className="text-white font-medium hover:text-blue-400 hover:underline text-left"
@@ -230,7 +230,7 @@ export function CompaniesPage() {
                       {company.name}
                     </button>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-left">
                     {company.website ? (
                       <a
                         href={company.website}
@@ -244,17 +244,49 @@ export function CompaniesPage() {
                       <span className="text-gray-500">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-center" title={company.star ? 'Starred' : 'Not starred'}>
-                    <span className={company.star ? 'text-yellow-400' : 'text-gray-600'}>
-                      {company.star ? '⭐' : '☆'}
-                    </span>
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          await companiesApi.update(company.id, { star: !company.star });
+                          setCompanies(prev => prev.map(c => 
+                            c.id === company.id ? { ...c, star: !c.star } : c
+                          ));
+                        } catch (err) {
+                          setError(err instanceof Error ? err.message : 'Failed to update star');
+                        }
+                      }}
+                      className="hover:scale-125 transition-transform cursor-pointer"
+                      title={company.star ? 'Unstar company' : 'Star company'}
+                    >
+                      <span className={company.star ? 'text-yellow-400' : 'text-gray-600'}>
+                        {company.star ? '⭐' : '☆'}
+                      </span>
+                    </button>
                   </td>
-                  <td className="px-4 py-3 text-center" title={company.revisit ? 'Flagged to revisit' : 'Not flagged'}>
-                    <span className={company.revisit ? 'text-red-400' : 'text-gray-600'}>
-                      {company.revisit ? '🚩' : '⚐'}
-                    </span>
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          await companiesApi.update(company.id, { revisit: !company.revisit });
+                          setCompanies(prev => prev.map(c => 
+                            c.id === company.id ? { ...c, revisit: !c.revisit } : c
+                          ));
+                        } catch (err) {
+                          setError(err instanceof Error ? err.message : 'Failed to update revisit');
+                        }
+                      }}
+                      className="hover:scale-125 transition-transform cursor-pointer"
+                      title={company.revisit ? 'Unflag for revisit' : 'Flag to revisit'}
+                    >
+                      <span className={company.revisit ? 'text-red-400' : 'text-gray-600'}>
+                        {company.revisit ? '🚩' : '⚐'}
+                      </span>
+                    </button>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-left">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

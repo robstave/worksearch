@@ -293,19 +293,19 @@ export function CompanyPage() {
             <div className="space-y-3">
               {visits.map((visit) => (
                 <div key={visit.id} className="p-3 bg-gray-700 rounded">
-                  <div className="flex items-start justify-between mb-1">
-                    <span className="text-sm text-gray-400">
+                  <div className="text-left">
+                    <span className="text-sm text-gray-400 block mb-1">
                       {new Date(visit.visitedAt).toLocaleString()}
                     </span>
                     {visit.status && (
-                      <span className="text-xs px-2 py-1 rounded bg-gray-600 text-gray-300">
+                      <span className="text-white text-sm block mb-1">
                         {visit.status}
                       </span>
                     )}
+                    {visit.note && (
+                      <p className="text-white text-sm">{visit.note}</p>
+                    )}
                   </div>
-                  {visit.note && (
-                    <p className="text-white text-sm">{visit.note}</p>
-                  )}
                 </div>
               ))}
             </div>
@@ -323,7 +323,7 @@ export function CompanyPage() {
             <h2 className="text-xl font-bold text-white mb-4">Log Visit</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Status (optional)</label>
+                <label className="block text-left text-sm font-medium text-gray-300 mb-1">Status (optional)</label>
                 <select
                   value={visitStatus}
                   onChange={(e) => setVisitStatus(e.target.value)}
@@ -336,12 +336,12 @@ export function CompanyPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Note (optional)</label>
+                <label className="block text-left text-sm font-medium text-gray-300 mb-1">Note (optional)</label>
                 <textarea
                   value={visitNote}
                   onChange={(e) => setVisitNote(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Add a note about this visit..."
                 />
               </div>

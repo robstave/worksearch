@@ -296,6 +296,21 @@ export function ApplicationPage() {
 
         {/* Form */}
         <div className="space-y-6">
+          {/* Applied Date (for existing applications - moved to top) */}
+          {!isNew && (
+            <div>
+              <label className="block text-left text-sm font-medium text-gray-300 mb-1">
+                Applied Date
+              </label>
+              <input
+                type="date"
+                value={appliedAt}
+                onChange={(e) => setAppliedAt(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+
           {/* Company (only for new) */}
           {isNew && (
             <div>
@@ -392,24 +407,6 @@ export function ApplicationPage() {
               <span>📝 Cover Letter</span>
             </label>
           </div>
-
-          {/* Applied Date (only for existing applications) */}
-          {!isNew && (
-            <div>
-              <label className="block text-left text-sm font-medium text-gray-300 mb-1">
-                Applied Date
-              </label>
-              <input
-                type="date"
-                value={appliedAt}
-                onChange={(e) => setAppliedAt(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Leave empty if not yet applied
-              </p>
-            </div>
-          )}
 
           {/* Tags */}
           <div>
@@ -540,16 +537,16 @@ export function ApplicationPage() {
         {/* Transition History */}
         {!isNew && application && application.transitions.length > 0 && (
           <div className="mt-8 pt-6 border-t border-gray-700">
-            <h3 className="text-lg font-medium text-white mb-4">Transition History</h3>
+            <h3 className="text-lg font-medium text-white mb-4 text-left">Transition History</h3>
             <div className="bg-gray-700 rounded-lg overflow-hidden">
               <table className="w-full">
                 <thead className="bg-gray-600">
                   <tr>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Date</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">From</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">To</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Note</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Actions</th>
+                    <th className="px-2 py-2 text-left text-sm font-medium text-gray-300">Date</th>
+                    <th className="px-2 py-2 text-left text-sm font-medium text-gray-300">From</th>
+                    <th className="px-2 py-2 text-left text-sm font-medium text-gray-300">To</th>
+                    <th className="px-2 py-2 text-left text-sm font-medium text-gray-300">Note</th>
+                    <th className="px-2 py-2 text-left text-sm font-medium text-gray-300">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-600">
@@ -557,7 +554,7 @@ export function ApplicationPage() {
                     const isEditing = editingTransitionId === t.id;
                     return (
                       <tr key={t.id}>
-                        <td className="px-4 py-2 text-sm text-gray-300">
+                        <td className="px-2 py-2 text-sm text-gray-300">
                           {isEditing ? (
                             <input
                               type="datetime-local"
@@ -569,7 +566,7 @@ export function ApplicationPage() {
                             new Date(t.transitionedAt).toLocaleString()
                           )}
                         </td>
-                        <td className="px-4 py-2">
+                        <td className="px-2 py-2">
                           {t.fromState ? (
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white ${STATE_COLORS[t.fromState]}`}>
                               {t.fromState}
@@ -578,12 +575,12 @@ export function ApplicationPage() {
                             <span className="text-gray-500 text-sm">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-2">
+                        <td className="px-2 py-2">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white ${STATE_COLORS[t.toState]}`}>
                             {t.toState}
                           </span>
                         </td>
-                        <td className="px-4 py-2 text-sm text-gray-400">
+                        <td className="px-2 py-2 text-sm text-gray-400">
                           {isEditing ? (
                             <input
                               type="text"
@@ -596,7 +593,7 @@ export function ApplicationPage() {
                             t.note || '—'
                           )}
                         </td>
-                        <td className="px-4 py-2">
+                        <td className="px-2 py-2">
                           {isEditing ? (
                             <div className="flex gap-2">
                               <Button

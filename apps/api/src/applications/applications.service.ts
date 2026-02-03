@@ -19,7 +19,9 @@ const ALLOWED_TRANSITIONS: Record<AppState, AppState[]> = {
   [AppState.INTERESTED]: [AppState.APPLIED, AppState.TRASH],
   [AppState.APPLIED]: [AppState.SCREENING, AppState.REJECTED, AppState.GHOSTED, AppState.TRASH],
   [AppState.SCREENING]: [AppState.INTERVIEW, AppState.REJECTED, AppState.GHOSTED, AppState.TRASH],
-  [AppState.INTERVIEW]: [AppState.OFFER, AppState.REJECTED, AppState.GHOSTED, AppState.TRASH],
+  [AppState.INTERVIEW]: [AppState.INTERVIEW_2, AppState.OFFER, AppState.REJECTED, AppState.GHOSTED, AppState.TRASH],
+  [AppState.INTERVIEW_2]: [AppState.INTERVIEW_3, AppState.OFFER, AppState.REJECTED, AppState.GHOSTED, AppState.TRASH],
+  [AppState.INTERVIEW_3]: [AppState.OFFER, AppState.REJECTED, AppState.GHOSTED, AppState.TRASH],
   [AppState.OFFER]: [AppState.ACCEPTED, AppState.DECLINED, AppState.REJECTED, AppState.GHOSTED],
   [AppState.ACCEPTED]: [], // terminal
   [AppState.DECLINED]: [], // terminal

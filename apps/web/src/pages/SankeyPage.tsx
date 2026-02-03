@@ -53,6 +53,8 @@ export function SankeyPage() {
     APPLIED: '#eab308',
     SCREENING: '#a855f7',
     INTERVIEW: '#22c55e',
+    INTERVIEW_2: '#16a34a',
+    INTERVIEW_3: '#15803d',
     OFFER: '#10b981',
     ACCEPTED: '#14b8a6',
     REJECTED: '#ef4444',

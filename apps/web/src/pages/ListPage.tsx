@@ -9,6 +9,8 @@ const STATE_COLORS: Record<AppState, string> = {
   APPLIED: 'bg-yellow-500',
   SCREENING: 'bg-purple-500',
   INTERVIEW: 'bg-green-500',
+  INTERVIEW_2: 'bg-green-600',
+  INTERVIEW_3: 'bg-green-700',
   OFFER: 'bg-emerald-500',
   ACCEPTED: 'bg-teal-500',
   DECLINED: 'bg-orange-500',

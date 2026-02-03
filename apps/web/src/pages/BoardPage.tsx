@@ -9,6 +9,8 @@ const COLUMNS: { state: AppState; label: string; color: string }[] = [
   { state: 'APPLIED', label: 'Applied', color: 'bg-yellow-500' },
   { state: 'SCREENING', label: 'Screening', color: 'bg-purple-500' },
   { state: 'INTERVIEW', label: 'Interview', color: 'bg-green-500' },
+  { state: 'INTERVIEW_2', label: 'Interview 2', color: 'bg-green-600' },
+  { state: 'INTERVIEW_3', label: 'Interview 3', color: 'bg-green-700' },
   { state: 'OFFER', label: 'Offer', color: 'bg-emerald-500' },
   { state: 'ACCEPTED', label: 'Accepted', color: 'bg-teal-500' },
   { state: 'DECLINED', label: 'Declined', color: 'bg-orange-500' },

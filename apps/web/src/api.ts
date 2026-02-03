@@ -109,6 +109,8 @@ export type AppState =
   | 'APPLIED'
   | 'SCREENING'
   | 'INTERVIEW'
+  | 'INTERVIEW_2'
+  | 'INTERVIEW_3'
   | 'OFFER'
   | 'ACCEPTED'
   | 'DECLINED'

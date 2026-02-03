@@ -203,48 +203,61 @@ export function CompaniesPage() {
           </button>
         </div>
       ) : (
-        <div className="bg-gray-800 rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-700">
-              <tr>
-                <SortHeader field="name">Name</SortHeader>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Website</th>
-                <SortHeader field="star" className="w-16 text-center">
-                  <span title="Starred companies">⭐</span>
-                </SortHeader>
-                <SortHeader field="revisit" className="w-16 text-center">
-                  <span title="Revisit flagged">🚩</span>
-                </SortHeader>
-                <SortHeader field="applicationCount">Applications</SortHeader>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {companies.map((company) => (
-                <tr key={company.id} className="hover:bg-gray-750">
-                  <td className="px-4 py-3 text-left">
-                    <button
-                      onClick={() => navigate(`/companies/${company.id}`)}
-                      className="text-white font-medium hover:text-blue-400 hover:underline text-left"
-                    >
-                      {company.name}
-                    </button>
-                  </td>
-                  <td className="px-4 py-3 text-left">
-                    {company.website ? (
+        <>
+          {/* Mobile/Tablet Card Layout */}
+          <div className="lg:hidden space-y-3">
+            {/* Sort controls for mobile */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <select
+                value={`${sortField}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-') as [typeof sortField, 'asc' | 'desc'];
+                  setSortField(field);
+                  setSortOrder(order);
+                }}
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm border border-gray-600"
+              >
+                <option value="name-asc">Name A-Z</option>
+                <option value="name-desc">Name Z-A</option>
+                <option value="applicationCount-desc">Most Apps</option>
+                <option value="applicationCount-asc">Fewest Apps</option>
+                <option value="star-desc">Starred First</option>
+                <option value="revisit-desc">Revisit First</option>
+              </select>
+            </div>
+            
+            {companies.map((company) => (
+              <div
+                key={company.id}
+                className="bg-gray-800 rounded-lg p-4 border border-gray-700"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={() => navigate(`/companies/${company.id}`)}
+                        className="text-white font-medium hover:text-blue-400 hover:underline text-left truncate max-w-[200px]"
+                      >
+                        {company.name}
+                      </button>
+                      {/* Inline star/revisit badges */}
+                      {company.star && <span className="text-yellow-400" title="Starred">⭐</span>}
+                      {company.revisit && <span className="text-red-400" title="Revisit">🚩</span>}
+                    </div>
+                    {company.website && (
                       <a
                         href={company.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-400 hover:underline text-sm"
+                        className="text-blue-400 hover:underline text-sm block truncate mt-1"
                       >
-                        {company.website}
+                        {company.website.replace(/^https?:\/\//, '')}
                       </a>
-                    ) : (
-                      <span className="text-gray-500">-</span>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={async (e) => {
                         e.stopPropagation();
@@ -257,15 +270,11 @@ export function CompaniesPage() {
                           setError(err instanceof Error ? err.message : 'Failed to update star');
                         }
                       }}
-                      className="hover:scale-125 transition-transform cursor-pointer"
-                      title={company.star ? 'Unstar company' : 'Star company'}
+                      className="p-1.5 text-gray-400 hover:text-yellow-400 hover:bg-gray-700 rounded transition-colors"
+                      title={company.star ? 'Unstar' : 'Star'}
                     >
-                      <span className={company.star ? 'text-yellow-400' : 'text-gray-600'}>
-                        {company.star ? '⭐' : '☆'}
-                      </span>
+                      <StarIcon filled={company.star} />
                     </button>
-                  </td>
-                  <td className="px-4 py-3 text-center">
                     <button
                       onClick={async (e) => {
                         e.stopPropagation();
@@ -278,55 +287,178 @@ export function CompaniesPage() {
                           setError(err instanceof Error ? err.message : 'Failed to update revisit');
                         }
                       }}
-                      className="hover:scale-125 transition-transform cursor-pointer"
-                      title={company.revisit ? 'Unflag for revisit' : 'Flag to revisit'}
+                      className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded transition-colors"
+                      title={company.revisit ? 'Unflag revisit' : 'Flag revisit'}
                     >
-                      <span className={company.revisit ? 'text-red-400' : 'text-gray-600'}>
-                        {company.revisit ? '🚩' : '⚐'}
-                      </span>
+                      <FlagIcon filled={company.revisit} />
                     </button>
-                  </td>
-                  <td className="px-4 py-3 text-left">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/applications/list?search=${encodeURIComponent(company.name)}`);
-                      }}
-                      className="text-blue-400 hover:text-blue-300 hover:underline"
+                      onClick={() => openModal('edit', company)}
+                      className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-gray-700 rounded transition-colors"
+                      title="Edit"
                     >
-                      {company.applicationCount}
+                      <PencilIcon />
                     </button>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex gap-1 justify-end">
-                      <button
-                        onClick={() => openModal('edit', company)}
-                        className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-gray-700 rounded transition-colors"
-                        title="Edit company"
-                      >
-                        <PencilIcon />
-                      </button>
-                      <button
-                        onClick={() => navigate('/applications/new', { state: { companyId: company.id, companyName: company.name } })}
-                        className="p-1.5 text-gray-400 hover:text-green-400 hover:bg-gray-700 rounded transition-colors"
-                        title="New application"
-                      >
-                        <DocumentPlusIcon />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(company.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded transition-colors"
-                        title="Delete company"
-                      >
-                        <TrashIcon />
-                      </button>
-                    </div>
-                  </td>
+                    <button
+                      onClick={() => navigate('/applications/new', { state: { companyId: company.id, companyName: company.name } })}
+                      className="p-1.5 text-gray-400 hover:text-green-400 hover:bg-gray-700 rounded transition-colors"
+                      title="New app"
+                    >
+                      <DocumentPlusIcon />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(company.id)}
+                      className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded transition-colors"
+                      title="Delete"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Bottom row: apps count */}
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-700">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/applications/list?search=${encodeURIComponent(company.name)}`);
+                    }}
+                    className="text-blue-400 hover:text-blue-300 hover:underline text-sm"
+                  >
+                    {company.applicationCount} application{company.applicationCount !== 1 ? 's' : ''}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table Layout */}
+          <div className="hidden lg:block bg-gray-800 rounded-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-700">
+                <tr>
+                  <SortHeader field="name">Name</SortHeader>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Website</th>
+                  <SortHeader field="star" className="w-16 text-center">
+                    <span title="Starred companies">⭐</span>
+                  </SortHeader>
+                  <SortHeader field="revisit" className="w-16 text-center">
+                    <span title="Revisit flagged">🚩</span>
+                  </SortHeader>
+                  <SortHeader field="applicationCount">Apps</SortHeader>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-300">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {companies.map((company) => (
+                  <tr key={company.id} className="hover:bg-gray-750">
+                    <td className="px-4 py-3 text-left">
+                      <button
+                        onClick={() => navigate(`/companies/${company.id}`)}
+                        className="text-white font-medium hover:text-blue-400 hover:underline text-left"
+                      >
+                        {company.name}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-left">
+                      {company.website ? (
+                        <a
+                          href={company.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:underline text-sm truncate block max-w-[200px]"
+                          title={company.website}
+                        >
+                          {company.website.replace(/^https?:\/\//, '')}
+                        </a>
+                      ) : (
+                        <span className="text-gray-500">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            await companiesApi.update(company.id, { star: !company.star });
+                            setCompanies(prev => prev.map(c => 
+                              c.id === company.id ? { ...c, star: !c.star } : c
+                            ));
+                          } catch (err) {
+                            setError(err instanceof Error ? err.message : 'Failed to update star');
+                          }
+                        }}
+                        className="hover:scale-125 transition-transform cursor-pointer"
+                        title={company.star ? 'Unstar company' : 'Star company'}
+                      >
+                        <span className={company.star ? 'text-yellow-400' : 'text-gray-600'}>
+                          {company.star ? '⭐' : '☆'}
+                        </span>
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            await companiesApi.update(company.id, { revisit: !company.revisit });
+                            setCompanies(prev => prev.map(c => 
+                              c.id === company.id ? { ...c, revisit: !c.revisit } : c
+                            ));
+                          } catch (err) {
+                            setError(err instanceof Error ? err.message : 'Failed to update revisit');
+                          }
+                        }}
+                        className="hover:scale-125 transition-transform cursor-pointer"
+                        title={company.revisit ? 'Unflag for revisit' : 'Flag to revisit'}
+                      >
+                        <span className={company.revisit ? 'text-red-400' : 'text-gray-600'}>
+                          {company.revisit ? '🚩' : '⚐'}
+                        </span>
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-left">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/applications/list?search=${encodeURIComponent(company.name)}`);
+                        }}
+                        className="text-blue-400 hover:text-blue-300 hover:underline"
+                      >
+                        {company.applicationCount}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex gap-1 justify-end">
+                        <button
+                          onClick={() => openModal('edit', company)}
+                          className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-gray-700 rounded transition-colors"
+                          title="Edit company"
+                        >
+                          <PencilIcon />
+                        </button>
+                        <button
+                          onClick={() => navigate('/applications/new', { state: { companyId: company.id, companyName: company.name } })}
+                          className="p-1.5 text-gray-400 hover:text-green-400 hover:bg-gray-700 rounded transition-colors"
+                          title="New application"
+                        >
+                          <DocumentPlusIcon />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(company.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded transition-colors"
+                          title="Delete company"
+                        >
+                          <TrashIcon />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* Pagination */}

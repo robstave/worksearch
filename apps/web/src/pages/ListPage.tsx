@@ -19,6 +19,28 @@ const STATE_COLORS: Record<AppState, string> = {
   TRASH: 'bg-gray-700',
 };
 
+// Compact work location badges
+const WORK_LOCATION_BADGES: Record<string, { letter: string; color: string; label: string }> = {
+  REMOTE: { letter: 'R', color: 'bg-cyan-600', label: 'Remote' },
+  ONSITE: { letter: 'O', color: 'bg-amber-600', label: 'On-site' },
+  HYBRID: { letter: 'H', color: 'bg-violet-600', label: 'Hybrid' },
+  CONTRACT: { letter: 'C', color: 'bg-rose-600', label: 'Contract' },
+};
+
+const WorkLocationBadge = ({ location }: { location: string | null | undefined }) => {
+  if (!location) return <span className="text-gray-500 text-sm">—</span>;
+  const badge = WORK_LOCATION_BADGES[location];
+  if (!badge) return <span className="text-gray-500 text-sm">—</span>;
+  return (
+    <span
+      className={`inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold text-white ${badge.color} cursor-help`}
+      title={badge.label}
+    >
+      {badge.letter}
+    </span>
+  );
+};
+
 export function ListPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -215,54 +237,103 @@ export function ListPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-gray-800 rounded-lg overflow-hidden">
-          <table className="w-full table-fixed">
-            <thead className="bg-gray-700">
-              <tr>
-                <SortHeader field="company" className="w-1/6">Company</SortHeader>
-                <SortHeader field="jobTitle" className="w-2/6">Job Title</SortHeader>
-                <SortHeader field="workLocation" className="w-1/12">Location</SortHeader>
-                <SortHeader field="state" className="w-1/6">State</SortHeader>
-                <SortHeader field="appliedAt" className="w-1/6">Applied</SortHeader>
-                <SortHeader field="updatedAt" className="w-1/6">Updated</SortHeader>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {applications.map((app) => (
-                <tr
-                  key={app.id}
-                  onClick={() => navigate(`/applications/${app.id}`)}
-                  className="hover:bg-gray-700 cursor-pointer"
-                >
-                  <td className="px-4 py-3 text-left text-white font-medium">{app.company.name}</td>
-                  <td className="px-4 py-3 text-left text-gray-300">{app.jobTitle}</td>
-                  <td className="px-4 py-3 text-left">
-                    {app.workLocation ? (
-                      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white bg-gray-600">
-                        {app.workLocation}
-                      </span>
-                    ) : (
-                      <span className="text-gray-500 text-sm">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-left">
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${STATE_COLORS[app.currentState]}`}
-                    >
-                      {app.currentState}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-left text-gray-400 text-sm">
-                    {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-left text-gray-400 text-sm">
-                    {new Date(app.updatedAt).toLocaleDateString()}
-                  </td>
+        <>
+          {/* Mobile/Tablet Card Layout */}
+          <div className="lg:hidden space-y-3">
+            {/* Sort selector for mobile */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <select
+                value={`${sortField}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-') as [typeof sortField, 'asc' | 'desc'];
+                  setSortField(field);
+                  setSortOrder(order);
+                }}
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm border border-gray-600"
+              >
+                <option value="updatedAt-desc">Recently Updated</option>
+                <option value="updatedAt-asc">Oldest Updated</option>
+                <option value="appliedAt-desc">Recently Applied</option>
+                <option value="appliedAt-asc">Oldest Applied</option>
+                <option value="company-asc">Company A-Z</option>
+                <option value="company-desc">Company Z-A</option>
+                <option value="jobTitle-asc">Title A-Z</option>
+                <option value="state-asc">State</option>
+              </select>
+            </div>
+            
+            {applications.map((app) => (
+              <div
+                key={app.id}
+                onClick={() => navigate(`/applications/${app.id}`)}
+                className="bg-gray-800 rounded-lg p-4 border border-gray-700 cursor-pointer hover:border-gray-600 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-white font-medium truncate">{app.company.name}</span>
+                      <WorkLocationBadge location={app.workLocation} />
+                    </div>
+                    <p className="text-gray-300 text-sm mt-1 truncate">{app.jobTitle}</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white shrink-0 ${STATE_COLORS[app.currentState]}`}
+                  >
+                    {app.currentState}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-700 text-xs text-gray-400">
+                  <span>Applied: {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'}</span>
+                  <span>Updated: {new Date(app.updatedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table Layout */}
+          <div className="hidden lg:block bg-gray-800 rounded-lg overflow-hidden">
+            <table className="w-full table-fixed">
+              <thead className="bg-gray-700">
+                <tr>
+                  <SortHeader field="company" className="w-1/6">Company</SortHeader>
+                  <SortHeader field="jobTitle" className="w-2/6">Job Title</SortHeader>
+                  <SortHeader field="workLocation" className="w-12">Loc</SortHeader>
+                  <SortHeader field="state" className="w-1/6">State</SortHeader>
+                  <SortHeader field="appliedAt" className="w-1/6">Applied</SortHeader>
+                  <SortHeader field="updatedAt" className="w-1/6">Updated</SortHeader>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {applications.map((app) => (
+                  <tr
+                    key={app.id}
+                    onClick={() => navigate(`/applications/${app.id}`)}
+                    className="hover:bg-gray-700 cursor-pointer"
+                  >
+                    <td className="px-4 py-3 text-left text-white font-medium truncate">{app.company.name}</td>
+                    <td className="px-4 py-3 text-left text-gray-300 truncate">{app.jobTitle}</td>
+                    <td className="px-4 py-3 text-left">
+                      <WorkLocationBadge location={app.workLocation} />
+                    </td>
+                    <td className="px-4 py-3 text-left">
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${STATE_COLORS[app.currentState]}`}
+                      >
+                        {app.currentState}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-left text-gray-400 text-sm">
+                      {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-left text-gray-400 text-sm">
+                      {new Date(app.updatedAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* Pagination */}

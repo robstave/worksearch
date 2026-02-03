@@ -35,9 +35,15 @@ interface ApplicationCardProps {
   app: Application;
   onDragStart: (app: Application) => void;
   onClick: () => void;
+  onQuickMove?: (app: Application, toState: AppState) => void;
 }
 
-function ApplicationCard({ app, onDragStart, onClick }: ApplicationCardProps) {
+function ApplicationCard({ app, onDragStart, onClick, onQuickMove }: ApplicationCardProps) {
+  const handleQuickMove = (e: React.MouseEvent, toState: AppState) => {
+    e.stopPropagation();
+    onQuickMove?.(app, toState);
+  };
+
   return (
     <div
       draggable
@@ -62,6 +68,33 @@ function ApplicationCard({ app, onDragStart, onClick }: ApplicationCardProps) {
           {formatTimeAgo(app.lastTransitionAt || app.updatedAt)}
         </span>
       </div>
+      {/* Quick action buttons */}
+      {(app.currentState === 'INTERESTED' || app.currentState === 'APPLIED') && (
+        <div className="flex gap-1 mt-1.5 justify-end">
+          {app.currentState === 'INTERESTED' && (
+            <button
+              onClick={(e) => handleQuickMove(e, 'TRASH')}
+              className="p-1 text-gray-500 hover:text-white hover:bg-gray-700 rounded transition-colors"
+              title="Move to Trash"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
+          {app.currentState === 'APPLIED' && (
+            <button
+              onClick={(e) => handleQuickMove(e, 'REJECTED')}
+              className="p-1 text-gray-500 hover:text-white hover:bg-red-500 rounded transition-colors"
+              title="Move to Rejected"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -74,6 +107,7 @@ interface ColumnProps {
   onDrop: (toState: AppState) => void;
   onDragStart: (app: Application) => void;
   onCardClick: (app: Application) => void;
+  onQuickMove: (app: Application, toState: AppState) => void;
   isDragOver: boolean;
   onDragOver: () => void;
   onDragLeave: () => void;
@@ -87,6 +121,7 @@ function Column({
   onDrop,
   onDragStart,
   onCardClick,
+  onQuickMove,
   isDragOver,
   onDragOver,
   onDragLeave,
@@ -126,6 +161,7 @@ function Column({
               app={app}
               onDragStart={onDragStart}
               onClick={() => onCardClick(app)}
+              onQuickMove={onQuickMove}
             />
           ))
         )}
@@ -276,6 +312,7 @@ export function BoardPage() {
               }
             }}
             onCardClick={(app) => navigate(`/applications/${app.id}`)}
+            onQuickMove={handleDrop}
             isDragOver={dragOverState === col.state}
             onDragOver={() => setDragOverState(col.state)}
             onDragLeave={() => setDragOverState(null)}

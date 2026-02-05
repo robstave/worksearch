@@ -283,7 +283,14 @@ export function CompanyPage() {
                   className="block p-3 bg-gray-700 rounded hover:bg-gray-650 transition-colors"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-white font-medium">{app.jobTitle}</span>
+                    <div className="flex-1">
+                      <span className="text-white font-medium">{app.jobTitle}</span>
+                      {app.appliedAt && (
+                        <span className="text-xs text-gray-400 ml-3">
+                          Applied: {new Date(app.appliedAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs px-2 py-1 rounded bg-gray-600 text-gray-300">
                       {app.currentState}
                     </span>

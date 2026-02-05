@@ -61,6 +61,7 @@ export interface CompanyDetail extends Company {
     id: string;
     jobTitle: string;
     currentState: AppState;
+    appliedAt: string | null;
     lastTransitionAt: string | null;
   }[];
 }

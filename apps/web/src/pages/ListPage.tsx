@@ -161,7 +161,7 @@ export function ListPage() {
               <option value={365}>1 year</option>
             </select>
           </div>
-          <div className="flex items-end gap-1" style={{ height: '64px' }}>
+          <div className={`flex items-end ${timelineDays > 90 ? 'gap-0' : 'gap-1'}`} style={{ height: '64px' }}>
             {timeline.map((day) => {
               const maxCount = Math.max(...timeline.map(d => d.count), 1);
               const heightPx = day.count > 0 ? Math.max((day.count / maxCount) * 64, 8) : 2;

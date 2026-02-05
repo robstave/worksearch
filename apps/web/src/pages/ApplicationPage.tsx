@@ -264,9 +264,18 @@ export function ApplicationPage() {
         {/* Header */}
         <div className="flex items-start gap-4 mb-6">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-white">
-              {isNew ? 'New Application' : application?.company.name}
-            </h1>
+            {isNew ? (
+              <h1 className="text-2xl font-bold text-white text-left">
+                New Application
+              </h1>
+            ) : application ? (
+              <Link 
+                to={`/companies/${application.company.id}`}
+                className="text-2xl font-bold text-white hover:text-blue-400 transition-colors text-left block"
+              >
+                {application.company.name}
+              </Link>
+            ) : null}
             {!isNew && application && (
               <div className="flex items-center gap-3 mt-2">
                 <span

@@ -18,6 +18,7 @@ export class CompaniesService {
     ownerId: string,
     search?: string,
     tag?: string,
+    filter?: 'star' | 'revisit' | 'all',
     sort: 'name' | 'applicationCount' | 'createdAt' | 'star' | 'revisit' = 'name',
     order: 'asc' | 'desc' = 'asc',
     page = 1,
@@ -35,6 +36,12 @@ export class CompaniesService {
           tag: { name: tag },
         },
       };
+    }
+
+    if (filter === 'star') {
+      where.star = true;
+    } else if (filter === 'revisit') {
+      where.revisit = true;
     }
 
     const skip = (page - 1) * limit;

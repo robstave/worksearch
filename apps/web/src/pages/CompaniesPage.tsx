@@ -57,6 +57,10 @@ export function CompaniesPage() {
   const [formName, setFormName] = useState('');
   const [formWebsite, setFormWebsite] = useState('');
   
+  // Filter state
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'star' | 'revisit' | 'all' | ''>('');
+  
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -66,7 +70,14 @@ export function CompaniesPage() {
 
   const loadCompanies = async () => {
     try {
-      const res = await companiesApi.list({ sort: sortField, order: sortOrder, page, limit });
+      const res = await companiesApi.list({ 
+        search: search || undefined, 
+        filter: filter || undefined, 
+        sort: sortField, 
+        order: sortOrder, 
+        page, 
+        limit 
+      });
       setCompanies(res.items);
       setTotalPages(res.totalPages);
       setTotal(res.total);
@@ -79,11 +90,11 @@ export function CompaniesPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [sortField, sortOrder]);
+  }, [search, filter, sortField, sortOrder]);
 
   useEffect(() => {
     loadCompanies();
-  }, [page, sortField, sortOrder]);
+  }, [search, filter, page, sortField, sortOrder]);
 
   const openModal = (type: ModalType, company?: Company) => {
     setModalType(type);
@@ -181,6 +192,25 @@ export function CompaniesPage() {
         >
           <PlusIcon /> Add Company
         </button>
+      </div>
+
+      <div className="flex gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Search company name..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as 'star' | 'revisit' | 'all' | '')}
+          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All Companies</option>
+          <option value="star">⭐ Favorites</option>
+          <option value="revisit">🔖 Revisit</option>
+        </select>
       </div>
 
       {error && (

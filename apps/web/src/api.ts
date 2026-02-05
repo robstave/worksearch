@@ -81,10 +81,11 @@ export interface PaginatedResponse<T> {
 }
 
 export const companiesApi = {
-  list: (options?: { search?: string; tag?: string; sort?: 'name' | 'applicationCount' | 'createdAt' | 'star' | 'revisit'; order?: 'asc' | 'desc'; page?: number; limit?: number }) => {
+  list: (options?: { search?: string; tag?: string; filter?: 'star' | 'revisit' | 'all'; sort?: 'name' | 'applicationCount' | 'createdAt' | 'star' | 'revisit'; order?: 'asc' | 'desc'; page?: number; limit?: number }) => {
     const params = new URLSearchParams();
     if (options?.search) params.set('search', options.search);
     if (options?.tag) params.set('tag', options.tag);
+    if (options?.filter) params.set('filter', options.filter);
     if (options?.sort) params.set('sort', options.sort);
     if (options?.order) params.set('order', options.order);
     if (options?.page) params.set('page', options.page.toString());

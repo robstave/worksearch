@@ -47,10 +47,12 @@ export function ListPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [stats, setStats] = useState<{ applied: number; interviewed: number; passedOn: number } | null>(null);
   const [timeline, setTimeline] = useState<Array<{ date: string; count: number }>>([]);
+  const [timelineDays, setTimelineDays] = useState(30);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [stateFilter, setStateFilter] = useState<AppState | ''>('');
+  const [appliedDateFilter, setAppliedDateFilter] = useState<string>(''); // YYYY-MM-DD format
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -64,13 +66,14 @@ export function ListPage() {
         applicationsApi.list({
           search: search || undefined,
           state: stateFilter || undefined,
+          appliedDate: appliedDateFilter || undefined,
           sort: sortField,
           order: sortOrder,
           page,
           limit,
         }),
         applicationsApi.getStats(),
-        applicationsApi.getTimeline(30),
+        applicationsApi.getTimeline(timelineDays),
       ]);
       setApplications(res.items);
       setTotalPages(res.totalPages);
@@ -86,11 +89,11 @@ export function ListPage() {
 
   useEffect(() => {
     setPage(1); // Reset to page 1 when filters or sort change
-  }, [search, stateFilter, sortField, sortOrder]);
+  }, [search, stateFilter, appliedDateFilter, sortField, sortOrder]);
 
   useEffect(() => {
     loadApplications();
-  }, [search, stateFilter, sortField, sortOrder, page]);
+  }, [search, stateFilter, appliedDateFilter, sortField, sortOrder, page, timelineDays]);
 
   if (loading) {
     return <LoadingScreen message="Loading applications..." />;
@@ -145,13 +148,26 @@ export function ListPage() {
       {/* Activity Timeline */}
       {timeline.length > 0 && (
         <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-6">
-          <div className="text-sm text-gray-400 mb-3">Applications Applied (Last 30 Days)</div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-sm text-gray-400">Applications Applied (Last {timelineDays} Days)</div>
+            <select
+              value={timelineDays}
+              onChange={(e) => setTimelineDays(Number(e.target.value))}
+              className="px-2 py-1 bg-gray-700 text-white text-xs rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value={30}>30 days</option>
+              <option value={60}>60 days</option>
+              <option value={90}>90 days</option>
+              <option value={365}>1 year</option>
+            </select>
+          </div>
           <div className="flex items-end gap-1" style={{ height: '64px' }}>
             {timeline.map((day) => {
               const maxCount = Math.max(...timeline.map(d => d.count), 1);
               const heightPx = day.count > 0 ? Math.max((day.count / maxCount) * 64, 8) : 2;
               const date = new Date(day.date);
               const isToday = new Date().toISOString().split('T')[0] === day.date;
+              const isSelected = appliedDateFilter === day.date;
               return (
                 <div
                   key={day.date}
@@ -159,15 +175,30 @@ export function ListPage() {
                   style={{ height: '64px' }}
                 >
                   <div
+                    onClick={() => {
+                      if (day.count > 0) {
+                        // Toggle filter: if already selected, clear it
+                        setAppliedDateFilter(isSelected ? '' : day.date);
+                      }
+                    }}
                     className={`w-full rounded-t transition-all ${
-                      day.count > 0 ? 'bg-blue-500 hover:bg-blue-400' : 'bg-gray-700'
-                    } ${isToday ? 'ring-2 ring-blue-300' : ''}`}
+                      day.count > 0 ? 'bg-blue-500 hover:bg-blue-400 cursor-pointer' : 'bg-gray-700'
+                    } ${isToday ? 'ring-2 ring-blue-300' : ''} ${isSelected ? 'ring-2 ring-yellow-400' : ''}`}
                     style={{ height: `${heightPx}px` }}
                   />
                   {/* Tooltip */}
-                  <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                    {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}: {day.count} app{day.count !== 1 ? 's' : ''}
-                  </div>
+                  {day.count > 0 && (
+                    <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10 max-w-xs">
+                      <div className="font-semibold mb-1">
+                        {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}: {day.count} app{day.count !== 1 ? 's' : ''}
+                      </div>
+                      <div className="text-left space-y-0.5">
+                        {day.companies.map((company, idx) => (
+                          <div key={idx} className="text-gray-300">• {company}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -196,6 +227,21 @@ export function ListPage() {
           </Link>
         </div>
       </div>
+
+      {/* Active filter indicator */}
+      {appliedDateFilter && (
+        <div className="mb-4 p-3 bg-blue-900/50 border border-blue-500 rounded text-blue-300 flex items-center justify-between">
+          <span>
+            Showing applications applied on {new Date(appliedDateFilter).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </span>
+          <button
+            onClick={() => setAppliedDateFilter('')}
+            className="text-blue-400 hover:text-blue-300 underline"
+          >
+            Clear filter
+          </button>
+        </div>
+      )}
 
       <div className="flex gap-4 mb-6">
         <input

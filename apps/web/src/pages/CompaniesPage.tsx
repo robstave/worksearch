@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { companiesApi } from '../api';
 import type { Company } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
@@ -186,12 +186,12 @@ export function CompaniesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-white">Companies</h1>
-        <button
-          onClick={() => openModal('add')}
+        <Link
+          to="/companies/new"
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
         >
           <PlusIcon /> Add Company
-        </button>
+        </Link>
       </div>
 
       <div className="flex gap-4 mb-6">
@@ -225,12 +225,12 @@ export function CompaniesPage() {
       {companies.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
           <p>No companies yet.</p>
-          <button
-            onClick={() => openModal('add')}
-            className="mt-2 text-blue-400 hover:underline"
+          <Link
+            to="/companies/new"
+            className="mt-2 text-blue-400 hover:underline inline-block"
           >
             Add your first company
-          </button>
+          </Link>
         </div>
       ) : (
         <>
@@ -369,10 +369,10 @@ export function CompaniesPage() {
                 <tr>
                   <SortHeader field="name">Name</SortHeader>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Website</th>
-                  <SortHeader field="star" className="w-16 text-center">
+                  <SortHeader field="star" className="w-16">
                     <span title="Starred companies">⭐</span>
                   </SortHeader>
-                  <SortHeader field="revisit" className="w-16 text-center">
+                  <SortHeader field="revisit" className="w-16">
                     <span title="Revisit flagged">🚩</span>
                   </SortHeader>
                   <SortHeader field="applicationCount">Apps</SortHeader>
@@ -405,7 +405,7 @@ export function CompaniesPage() {
                         <span className="text-gray-500">-</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-4 py-3 text-left">
                       <button
                         onClick={async (e) => {
                           e.stopPropagation();
@@ -426,7 +426,7 @@ export function CompaniesPage() {
                         </span>
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-4 py-3 text-left">
                       <button
                         onClick={async (e) => {
                           e.stopPropagation();

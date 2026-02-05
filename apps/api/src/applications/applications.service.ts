@@ -41,13 +41,14 @@ export class ApplicationsService {
       companyId?: string;
       tag?: string;
       search?: string;
+      appliedDate?: string; // YYYY-MM-DD format
       sort?: 'updatedAt' | 'company' | 'ageInState' | 'appliedAt' | 'jobTitle' | 'state' | 'workLocation';
       order?: 'asc' | 'desc';
       page?: number;
       limit?: number;
     } = {},
   ) {
-    const { state, companyId, tag, search, sort = 'updatedAt', order = 'desc', page = 1, limit = 20 } = options;
+    const { state, companyId, tag, search, appliedDate, sort = 'updatedAt', order = 'desc', page = 1, limit = 20 } = options;
 
     const where: any = { ownerId };
 
@@ -72,6 +73,18 @@ export class ApplicationsService {
         { jobTitle: { contains: search, mode: 'insensitive' } },
         { company: { name: { contains: search, mode: 'insensitive' } } },
       ];
+    }
+
+    if (appliedDate) {
+      // Filter for applications applied on this specific date
+      const startOfDay = new Date(appliedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(appliedDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      where.appliedAt = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
     }
 
     let orderBy: any = { updatedAt: order };
@@ -476,32 +489,40 @@ export class ApplicationsService {
       },
       select: {
         appliedAt: true,
+        company: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
-    // Create a map of date -> count
-    const countByDate = new Map<string, number>();
+    // Create a map of date -> { count, companies }
+    const dataByDate = new Map<string, { count: number; companies: string[] }>();
     
     // Initialize all days with 0
     for (let i = 0; i < days; i++) {
       const d = new Date(startDate);
       d.setDate(d.getDate() + i);
       const key = d.toISOString().split('T')[0];
-      countByDate.set(key, 0);
+      dataByDate.set(key, { count: 0, companies: [] });
     }
 
-    // Count applications per day by appliedAt
+    // Count applications per day by appliedAt and collect company names
     for (const app of applications) {
       if (app.appliedAt) {
         const key = app.appliedAt.toISOString().split('T')[0];
-        countByDate.set(key, (countByDate.get(key) || 0) + 1);
+        const data = dataByDate.get(key) || { count: 0, companies: [] };
+        data.count += 1;
+        data.companies.push(app.company.name);
+        dataByDate.set(key, data);
       }
     }
 
     // Convert to array sorted by date
-    const timeline = Array.from(countByDate.entries())
+    const timeline = Array.from(dataByDate.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([date, count]) => ({ date, count }));
+      .map(([date, data]) => ({ date, count: data.count, companies: data.companies }));
 
     return { timeline };
   }

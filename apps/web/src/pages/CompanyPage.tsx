@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 export function CompanyPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const isNew = id === 'new';
 
   const [company, setCompany] = useState<CompanyDetail | null>(null);
   const [visits, setVisits] = useState<CompanyVisit[]>([]);
@@ -31,7 +32,10 @@ export function CompanyPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!id) return;
+      if (!id || isNew) {
+        setLoading(false);
+        return;
+      }
 
       try {
         const [companyData, visitsData] = await Promise.all([
@@ -52,10 +56,10 @@ export function CompanyPage() {
       }
     };
     loadData();
-  }, [id]);
+  }, [id, isNew]);
 
   const handleSave = async () => {
-    if (!id || !name.trim()) return;
+    if (!name.trim()) return;
 
     setSaving(true);
     setError('');
@@ -65,14 +69,25 @@ export function CompanyPage() {
         websiteUrl = 'https://' + websiteUrl;
       }
 
-      const updated = await companiesApi.update(id, {
-        name: name.trim(),
-        website: websiteUrl || undefined,
-        notesMd,
-        star,
-        revisit,
-      });
-      setCompany(prev => prev ? { ...prev, ...updated } : null);
+      if (isNew) {
+        const newCompany = await companiesApi.create({
+          name: name.trim(),
+          website: websiteUrl || undefined,
+          notesMd,
+          star,
+          revisit,
+        });
+        navigate(`/companies/${newCompany.id}`);
+      } else if (id) {
+        const updated = await companiesApi.update(id, {
+          name: name.trim(),
+          website: websiteUrl || undefined,
+          notesMd,
+          star,
+          revisit,
+        });
+        setCompany(prev => prev ? { ...prev, ...updated } : null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save company');
     } finally {
@@ -81,7 +96,7 @@ export function CompanyPage() {
   };
 
   const handleLogVisit = async () => {
-    if (!id) return;
+    if (!id || isNew) return;
 
     try {
       const visit = await companiesApi.createVisit(id, {
@@ -98,7 +113,7 @@ export function CompanyPage() {
   };
 
   const handleDelete = async () => {
-    if (!id) return;
+    if (!id || isNew) return;
     if (!confirm('Delete this company? This will also delete all applications for this company.')) return;
 
     try {
@@ -110,10 +125,10 @@ export function CompanyPage() {
   };
 
   if (loading) {
-    return <LoadingScreen message="Loading company..." />;
+    return <LoadingScreen message={isNew ? 'Creating company...' : 'Loading company...'} />;
   }
 
-  if (!company) {
+  if (!isNew && !company) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-400 mb-4">Company not found</p>
@@ -129,7 +144,7 @@ export function CompanyPage() {
         <Link to="/companies" className="text-blue-400 hover:underline mb-2 inline-block">
           ← Back to Companies
         </Link>
-        <h1 className="text-3xl font-bold text-white">Company Details</h1>
+        <h1 className="text-3xl font-bold text-white">{isNew ? 'Add Company' : 'Company Details'}</h1>
       </div>
 
       {error && (
@@ -200,14 +215,16 @@ export function CompanyPage() {
               disabled={saving}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? 'Saving...' : (isNew ? 'Create Company' : 'Save Changes')}
             </Button>
-            <Button
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete Company
-            </Button>
+            {!isNew && (
+              <Button
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete Company
+              </Button>
+            )}
           </div>
         </div>
 
@@ -242,22 +259,23 @@ export function CompanyPage() {
         </div>
 
         {/* Applications Card */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white">
-              Applications ({company.applications.length})
-            </h2>
-            <Button
-              onClick={() => navigate('/applications/new', { state: { companyId: company.id, companyName: company.name } })}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              + New Application
-            </Button>
-          </div>
-          {company.applications.length === 0 ? (
-            <p className="text-gray-500 italic">No applications yet.</p>
-          ) : (
-            <div className="space-y-2">
+        {!isNew && company && (
+          <div className="bg-gray-800 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-white">
+                Applications ({company.applications.length})
+              </h2>
+              <Button
+                onClick={() => navigate('/applications/new', { state: { companyId: company.id, companyName: company.name } })}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                + New Application
+              </Button>
+            </div>
+            {company.applications.length === 0 ? (
+              <p className="text-gray-500 italic">No applications yet.</p>
+            ) : (
+              <div className="space-y-2">
               {company.applications.map((app) => (
                 <Link
                   key={app.id}
@@ -274,10 +292,12 @@ export function CompanyPage() {
               ))}
             </div>
           )}
-        </div>
+          </div>
+        )}
 
         {/* Visit History Card */}
-        <div className="bg-gray-800 rounded-lg p-6">
+        {!isNew && (
+          <div className="bg-gray-800 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-white">Visit History</h2>
             <Button
@@ -310,11 +330,12 @@ export function CompanyPage() {
               ))}
             </div>
           )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Visit Modal */}
-      {showVisitModal && (
+      {showVisitModal && !isNew && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           onClick={() => setShowVisitModal(false)}

@@ -22,10 +22,11 @@ export class JobBoardsController {
   @Get()
   findAll(
     @Req() req: any,
+    @Query('search') search?: string,
     @Query('sort') sort?: 'name' | 'updatedAt',
     @Query('order') order?: 'asc' | 'desc',
   ) {
-    return this.jobBoardsService.findAll(req.session.userId, sort, order);
+    return this.jobBoardsService.findAll(req.session.userId, search, sort, order);
   }
 
   @Get(':id')

@@ -159,6 +159,7 @@ export const applicationsApi = {
     state?: AppState;
     companyId?: string;
     search?: string;
+    appliedDate?: string;
     sort?: 'updatedAt' | 'company' | 'appliedAt' | 'jobTitle' | 'state' | 'workLocation';
     order?: 'asc' | 'desc';
     page?: number;
@@ -168,6 +169,7 @@ export const applicationsApi = {
     if (options?.state) params.set('state', options.state);
     if (options?.companyId) params.set('companyId', options.companyId);
     if (options?.search) params.set('search', options.search);
+    if (options?.appliedDate) params.set('appliedDate', options.appliedDate);
     if (options?.sort) params.set('sort', options.sort);
     if (options?.order) params.set('order', options.order);
     if (options?.page) params.set('page', options.page.toString());
@@ -209,7 +211,7 @@ export const applicationsApi = {
     passedOn: number;
   }>('/applications/analytics/stats'),
   getTimeline: (days = 30) => request<{
-    timeline: Array<{ date: string; count: number }>;
+    timeline: Array<{ date: string; count: number; companies: string[] }>;
   }>(`/applications/analytics/timeline?days=${days}`),
 };
 
@@ -224,8 +226,9 @@ export interface JobBoard {
 }
 
 export const jobBoardsApi = {
-  list: (options?: { sort?: 'name' | 'updatedAt'; order?: 'asc' | 'desc' }) => {
+  list: (options?: { search?: string; sort?: 'name' | 'updatedAt'; order?: 'asc' | 'desc' }) => {
     const params = new URLSearchParams();
+    if (options?.search) params.set('search', options.search);
     if (options?.sort) params.set('sort', options.sort);
     if (options?.order) params.set('order', options.order);
     const query = params.toString();

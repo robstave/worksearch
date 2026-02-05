@@ -9,12 +9,13 @@ export function JobBoardsPage() {
   const [jobBoards, setJobBoards] = useState<JobBoard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState<'name' | 'updatedAt'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const loadJobBoards = async () => {
     try {
-      const res = await jobBoardsApi.list({ sort: sortField, order: sortOrder });
+      const res = await jobBoardsApi.list({ search: search || undefined, sort: sortField, order: sortOrder });
       setJobBoards(res.items);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load job boards');
@@ -25,7 +26,7 @@ export function JobBoardsPage() {
 
   useEffect(() => {
     loadJobBoards();
-  }, [sortField, sortOrder]);
+  }, [search, sortField, sortOrder]);
 
   if (loading) {
     return <LoadingScreen message="Loading job boards..." />;
@@ -64,6 +65,16 @@ export function JobBoardsPage() {
         >
           + Add Job Board
         </Link>
+      </div>
+
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search job boards..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
       </div>
 
       {error && (

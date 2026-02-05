@@ -8,11 +8,18 @@ export class JobBoardsService {
 
   async findAll(
     ownerId: string,
+    search?: string,
     sort: 'name' | 'updatedAt' = 'name',
     order: 'asc' | 'desc' = 'asc',
   ) {
+    const where: any = { ownerId };
+
+    if (search) {
+      where.name = { contains: search, mode: 'insensitive' };
+    }
+
     const jobBoards = await this.prisma.jobBoard.findMany({
-      where: { ownerId },
+      where,
       orderBy: { [sort]: order },
     });
 

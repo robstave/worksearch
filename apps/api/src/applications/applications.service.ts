@@ -200,6 +200,7 @@ export class ApplicationsService {
         coverLetter: dto.coverLetter ?? false,
         jobDescriptionMd: dto.jobDescriptionMd ?? '',
         currentState: initialState as PrismaAppState,
+        appliedAt: initialState === AppState.APPLIED ? new Date() : null,
         transitions: {
           create: {
             fromState: null,

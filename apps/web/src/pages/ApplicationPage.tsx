@@ -158,7 +158,7 @@ export function ApplicationPage() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (initialState?: AppState) => {
     if (!jobTitle.trim()) {
       setError('Job title is required');
       return;
@@ -181,6 +181,7 @@ export function ApplicationPage() {
           workLocation: workLocation || undefined,
           easyApply,
           coverLetter,
+          initialState,
         });
         // If tags were added, update them
         if (tags.length > 0) {
@@ -533,13 +534,32 @@ export function ApplicationPage() {
             >
               Cancel
             </Link>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-md transition-colors"
-            >
-              {saving ? 'Saving...' : isNew ? 'Create Application' : 'Save Changes'}
-            </button>
+            {isNew ? (
+              <>
+                <button
+                  onClick={() => handleSave('INTERESTED')}
+                  disabled={saving}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 text-white rounded-md transition-colors"
+                >
+                  {saving ? 'Saving...' : 'Save as Interested'}
+                </button>
+                <button
+                  onClick={() => handleSave('APPLIED')}
+                  disabled={saving}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-md transition-colors"
+                >
+                  {saving ? 'Saving...' : 'Create Application'}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => handleSave()}
+                disabled={saving}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-md transition-colors"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            )}
           </div>
         </div>
 

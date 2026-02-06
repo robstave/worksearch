@@ -585,12 +585,66 @@ export function ApplicationPage() {
                       <tr key={t.id}>
                         <td className="px-2 py-2 text-sm text-gray-300">
                           {isEditing ? (
-                            <input
-                              type="datetime-local"
-                              value={editingTransitionDate}
-                              onChange={(e) => setEditingTransitionDate(e.target.value)}
-                              className="w-full px-2 py-1 bg-gray-600 text-white rounded border border-gray-500 text-sm"
-                            />
+                            <div className="flex flex-col gap-1">
+                              <input
+                                type="datetime-local"
+                                value={editingTransitionDate}
+                                onChange={(e) => setEditingTransitionDate(e.target.value)}
+                                className="w-full px-2 py-1 bg-gray-600 text-white rounded border border-gray-500 text-sm"
+                              />
+                              <div className="flex gap-1 flex-wrap">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const now = new Date();
+                                    setEditingTransitionDate(now.toISOString().slice(0, 16));
+                                  }}
+                                  className="px-2 py-0.5 text-xs bg-gray-600 hover:bg-gray-500 text-white rounded border border-gray-500"
+                                  title="Set to today"
+                                >
+                                  Today
+                                </button>
+                                {application?.appliedAt && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const appDate = new Date(application.appliedAt!);
+                                        setEditingTransitionDate(appDate.toISOString().slice(0, 16));
+                                      }}
+                                      className="px-2 py-0.5 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded border border-blue-500"
+                                      title="Set to application date"
+                                    >
+                                      App Date
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const appDate = new Date(application.appliedAt!);
+                                        appDate.setMonth(appDate.getMonth() + 1);
+                                        setEditingTransitionDate(appDate.toISOString().slice(0, 16));
+                                      }}
+                                      className="px-2 py-0.5 text-xs bg-orange-600 hover:bg-orange-500 text-white rounded border border-orange-500"
+                                      title="1 month after application"
+                                    >
+                                      +1mo
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const appDate = new Date(application.appliedAt!);
+                                        appDate.setMonth(appDate.getMonth() + 2);
+                                        setEditingTransitionDate(appDate.toISOString().slice(0, 16));
+                                      }}
+                                      className="px-2 py-0.5 text-xs bg-red-600 hover:bg-red-500 text-white rounded border border-red-500"
+                                      title="2 months after application (typical ghosting timeframe)"
+                                    >
+                                      +2mo
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           ) : (
                             new Date(t.transitionedAt).toLocaleString()
                           )}

@@ -1,15 +1,16 @@
 # WorkSearch - AI Agent Context
 
 > This file helps AI assistants understand the project state and continue work.
-> Last updated: 2026-01-30
+> Last updated: 2026-02-05
 
 ## Project Overview
 
-**WorkSearch** is a job application tracking app with a Kanban board UI.
+**WorkSearch** is a job application tracking app with a Kanban board UI, responsive design, and analytics.
 
 - **Stack**: NestJS (API) + React/Vite (Web) + PostgreSQL + Prisma
-- **Auth**: Session cookies with express-session
-- **State Machine**: Applications flow through: INTERESTED → APPLIED → SCREENING → INTERVIEW → (REJECTED|GHOSTED|TRASH)
+- **Auth**: Session cookies with express-session, avatar dropdown with role-based access
+- **State Machine**: Applications flow through: INTERESTED → APPLIED → SCREENING → INTERVIEW (1/2/3) → OFFER → (ACCEPTED|DECLINED|REJECTED|GHOSTED|TRASH)
+- **Responsive**: Optimized for desktop, tablet, and mobile with breakpoint at 1024px
 
 ## Quick Start
 
@@ -60,10 +61,15 @@ apps/
         CompaniesPage.tsx    # Companies list with star/revisit flags
         CompanyPage.tsx      # Company detail/edit with notes + visits
         ApplicationPage.tsx  # Application detail/edit
-        JobBoardsPage.tsx    # Job boards list
+        JobBoardsPage.tsx    # Job boards list with search
         JobBoardPage.tsx     # Job board detail/edit
         AdminUsersPage.tsx   # Admin user management
         SankeyPage.tsx       # State transition analytics
+        SettingsPage.tsx     # User settings (placeholder)
+        ProfilePage.tsx      # User profile (placeholder)
+      theme.tsx      # Theme context with dark mode support
+      components/
+        ui/          # Reusable UI components (Button, Spinner, etc.)
 docs/
   specs/         # Original requirements
 ```
@@ -75,34 +81,44 @@ docs/
 | Feature | Backend | Frontend | Notes |
 |---------|---------|----------|-------|
 | Auth (login/logout/me) | ✅ | ✅ | Session cookies |
+| Avatar Dropdown | ✅ | ✅ | Color-coded user avatars with menu (Profile/Settings/Display Mode/Admin/Logout) |
+| Theme System | ✅ | ✅ | Dark mode (light mode placeholder) |
 | Companies CRUD | ✅ | ✅ | With ownership, star/revisit flags, markdown notes |
-| Company Detail Page | ✅ | ✅ | Markdown notes, star/revisit toggles, visit history |
+| Company Search | ✅ | ✅ | Filter by name |
+| Company Filters | ✅ | ✅ | Filter by starred or revisit flag |
+| Company Detail Page | ✅ | ✅ | Create/edit, markdown notes, star/revisit toggles, visit history, apps list with applied dates |
 | Company Visits | ✅ | ✅ | Track check-ins with timestamps, notes, status |
-| Applications CRUD | ✅ | ✅ | Full state machine |
+| Applications CRUD | ✅ | ✅ | Full state machine with 3 interview stages |
+| Application Creation | ✅ | ✅ | Two-button flow: "Save as Interested" or "Create Application" (starts in APPLIED state) |
 | Kanban Board | ✅ | ✅ | Drag-drop moves |
-| List View | ✅ | ✅ | Search + filter |
+| List View | ✅ | ✅ | Search + filter + sort |
+| List View Analytics | ✅ | ✅ | Dashboard stats (applied/interviewed/passed on) |
+| Timeline Graph | ✅ | ✅ | Interactive 30/60/90/365-day chart with company tooltips and date filtering |
 | Tags | ✅ | ✅ | Simple string array |
-| Application Detail Page | ✅ | ✅ | Title, URL, tags, markdown description |
-| Applied Date | ✅ | ✅ | Captured on APPLIED transition |
-| Job Boards | ✅ | ✅ | Save job board bookmarks with markdown notes |
-| Work Location Type | ✅ | ✅ | REMOTE/ONSITE/HYBRID/CONTRACT enum field |
+| Application Detail Page | ✅ | ✅ | Edit all fields including applied date, title, URL, tags, markdown description |
+| Applied Date | ✅ | ✅ | Editable field, auto-set on APPLIED creation, filterable by date |
+| Transition History | ✅ | ✅ | Inline editing of transition dates and notes |
+| Job Boards | ✅ | ✅ | Save job board bookmarks with markdown notes and search |
+| Work Location Type | ✅ | ✅ | REMOTE/ONSITE/HYBRID/CONTRACT with compact badges (R/O/H/C) |
+| Application Flags | ✅ | ✅ | Easy Apply (⚡) and Cover Letter (📝) checkboxes |
 | Admin User CRUD | ✅ | ✅ | Full admin panel at /admin/users |
 | Sankey Analytics | ✅ | ✅ | State transition flow visualization |
+| Responsive Design | ✅ | ✅ | Card layouts for mobile/tablet, tables for desktop (1024px breakpoint) |
 
 ### 🔲 Not Yet Implemented
 
 | Feature | Priority | Notes |
 |---------|----------|-------|
-| Events/Notes | High | Timestamped notes on applications |
-| State Transition History | Medium | Show history in detail view |
-| Inline Company Creation | Medium | "Add new" in application modal |
+| Events/Notes | Medium | Timestamped notes on applications |
+| Light Mode | Low | Infrastructure exists, needs styling |
+| Settings Page | Low | Placeholder exists |
+| Profile Page | Low | Basic display only |
 | Sorting within columns | Low | By date, company name |
 | Bulk Actions | Low | Multi-select to trash |
 | Export/Import CSV | Low | |
-| Mobile polish | Low | Board scrollable but could improve |
 | E2E Tests | Medium | |
 | Self-Service Password | Medium | User changes own password |
-| Company AI Autofill | Medium | LLM-powered company info lookup |
+| Company AI Autofill | Low | LLM-powered company info lookup |
 
 ## Key Technical Decisions
 
@@ -117,9 +133,12 @@ docs/
 INTERESTED → APPLIED, TRASH
 APPLIED → SCREENING, REJECTED, GHOSTED, TRASH
 SCREENING → INTERVIEW, REJECTED, GHOSTED, TRASH
-INTERVIEW → OFFER, REJECTED, GHOSTED, TRASH
-OFFER → ACCEPTED, REJECTED, GHOSTED
+INTERVIEW → INTERVIEW_2, OFFER, REJECTED, GHOSTED, TRASH
+INTERVIEW_2 → INTERVIEW_3, OFFER, REJECTED, GHOSTED, TRASH
+INTERVIEW_3 → OFFER, REJECTED, GHOSTED, TRASH
+OFFER → ACCEPTED, DECLINED, REJECTED, GHOSTED
 ACCEPTED → (terminal)
+DECLINED → (terminal)
 REJECTED → (terminal)
 GHOSTED → (terminal)
 TRASH → (terminal)
@@ -132,7 +151,7 @@ POST   /api/auth/login     { email, password }
 POST   /api/auth/logout
 GET    /api/auth/me
 
-GET    /api/companies
+GET    /api/companies      ?search=&starred=&revisit=
 POST   /api/companies      { name, website?, notesMd?, star?, revisit? }
 GET    /api/companies/:id
 PATCH  /api/companies/:id  { name?, website?, notesMd?, star?, revisit? }
@@ -140,14 +159,15 @@ DELETE /api/companies/:id
 GET    /api/companies/:id/visits
 POST   /api/companies/:id/visits { note?, status? }
 
-GET    /api/applications   ?state=&search=&sort=&order=
-POST   /api/applications   { companyId, jobTitle, jobReqUrl? }
+GET    /api/applications   ?state=&search=&sort=&order=&from=&to=
+GET    /api/applications/timeline ?days=30|60|90|365
+POST   /api/applications   { companyId, jobTitle, jobReqUrl?, initialState? }
 GET    /api/applications/:id
-PATCH  /api/applications/:id { jobTitle?, jobReqUrl?, jobDescriptionMd?, tags? }
+PATCH  /api/applications/:id { jobTitle?, jobReqUrl?, jobDescriptionMd?, tags?, appliedAt? }
 POST   /api/applications/:id/move { toState, note? }
 DELETE /api/applications/:id
 
-GET    /api/job-boards
+GET    /api/job-boards     ?search=
 POST   /api/job-boards     { name, link?, notesMd? }
 GET    /api/job-boards/:id
 PATCH  /api/job-boards/:id { name?, link?, notesMd? }

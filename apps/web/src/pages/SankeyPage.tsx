@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Plot from 'react-plotly.js';
 import { applicationsApi } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
@@ -67,10 +68,25 @@ export function SankeyPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Application Flow</h1>
+        <h1 className="text-2xl font-bold text-white">Analytics</h1>
         <p className="text-gray-400 mt-1">
           Sankey diagram showing how your applications move through different states
         </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6">
+        <Link
+          to="/analytics/heatmap"
+          className="px-4 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+        >
+          Heatmap
+        </Link>
+        <span
+          className="px-4 py-2 rounded-md text-sm font-medium bg-gray-700 text-white"
+        >
+          Flow
+        </span>
       </div>
 
       <div className="bg-gray-800 rounded-lg p-6">

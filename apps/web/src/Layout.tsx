@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   { path: '/applications/list', label: 'List' },
   { path: '/applications/board', label: 'Board' },
   { path: '/calendar', label: 'Calendar' },
-  { path: '/analytics/sankey', label: 'Analytics' },
+  { path: '/analytics/heatmap', label: 'Analytics' },
   { path: '/companies', label: 'Companies' },
   { path: '/job-boards', label: 'Job Boards' },
 ];
@@ -228,19 +228,24 @@ export function Layout() {
                 <span className="hidden sm:inline">WorkSearch</span>
               </Link>
               <div className="flex gap-1">
-                {NAV_ITEMS.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      location.pathname === item.path
-                        ? 'bg-gray-700 text-white'
-                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                {NAV_ITEMS.map((item) => {
+                  const isActive = item.path.startsWith('/analytics')
+                    ? location.pathname.startsWith('/analytics')
+                    : location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-gray-700 text-white'
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
             

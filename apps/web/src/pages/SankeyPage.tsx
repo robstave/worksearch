@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Plot from 'react-plotly.js';
 import { applicationsApi } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
+import { STATE_COLORS } from '@/lib/stateColors';
 
 export function SankeyPage() {
   const [data, setData] = useState<{
@@ -47,23 +48,7 @@ export function SankeyPage() {
     );
   }
 
-  // Color map for states
-  const colorMap: Record<string, string> = {
-    START: '#6b7280',
-    INTERESTED: '#3b82f6',
-    APPLIED: '#eab308',
-    SCREENING: '#a855f7',
-    INTERVIEW: '#22c55e',
-    INTERVIEW_2: '#16a34a',
-    INTERVIEW_3: '#15803d',
-    OFFER: '#10b981',
-    ACCEPTED: '#14b8a6',
-    REJECTED: '#ef4444',
-    GHOSTED: '#9ca3af',
-    TRASH: '#374151',
-  };
-
-  const nodeColors = data.nodes.map((node) => colorMap[node.name] || '#6b7280');
+  const nodeColors = data.nodes.map((node) => STATE_COLORS[node.name] || '#6b7280');
 
   return (
     <div>
@@ -81,6 +66,12 @@ export function SankeyPage() {
           className="px-4 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
         >
           Heatmap
+        </Link>
+        <Link
+          to="/analytics/timeline"
+          className="px-4 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+        >
+          Timeline
         </Link>
         <span
           className="px-4 py-2 rounded-md text-sm font-medium bg-gray-700 text-white"

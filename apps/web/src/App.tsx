@@ -13,6 +13,7 @@ import { JobBoardsPage } from './pages/JobBoardsPage';
 import { JobBoardPage } from './pages/JobBoardPage';
 import { SankeyPage } from './pages/SankeyPage';
 import { HeatmapPage } from './pages/HeatmapPage';
+import { SwimlanePage } from './pages/SwimlanePage';
 import { CalendarPage } from './pages/CalendarPage';
 import { EventPage } from './pages/EventPage';
 import { AdminUsersPage } from './pages/AdminUsersPage';
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/applications/:id" element={<ApplicationPage />} />
                 <Route path="/analytics/sankey" element={<SankeyPage />} />
                 <Route path="/analytics/heatmap" element={<HeatmapPage />} />
+                <Route path="/analytics/timeline" element={<SwimlanePage />} />
                 <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/events/:id" element={<EventPage />} />
                 <Route path="/companies" element={<CompaniesPage />} />

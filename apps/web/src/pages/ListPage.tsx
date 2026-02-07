@@ -67,7 +67,7 @@ export function ListPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [stateFilter, setStateFilter] = useState<AppState | ''>('');
-  const [appliedDateFilter, setAppliedDateFilter] = useState<string>(''); // YYYY-MM-DD format
+  const [appliedDateFilter, setAppliedDateFilter] = useState<string>(searchParams.get('appliedDate') || ''); // YYYY-MM-DD format
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);

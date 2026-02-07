@@ -568,4 +568,40 @@ export class ApplicationsService {
 
     return { cleaned: result.count };
   }
+
+  async getSwimlaneData(ownerId: string) {
+    const applications = await this.prisma.application.findMany({
+      where: {
+        ownerId,
+        // Exclude INTERESTED-only and TRASH
+        currentState: { notIn: ['INTERESTED', 'TRASH'] },
+        appliedAt: { not: null },
+      },
+      include: {
+        company: { select: { name: true } },
+        transitions: {
+          orderBy: { transitionedAt: 'asc' },
+          select: {
+            fromState: true,
+            toState: true,
+            transitionedAt: true,
+          },
+        },
+      },
+      orderBy: { appliedAt: 'asc' },
+    });
+
+    return applications.map((app) => ({
+      id: app.id,
+      company: app.company.name,
+      jobTitle: app.jobTitle,
+      appliedAt: app.appliedAt!.toISOString(),
+      currentState: app.currentState,
+      transitions: app.transitions.map((t) => ({
+        fromState: t.fromState,
+        toState: t.toState,
+        date: t.transitionedAt.toISOString(),
+      })),
+    }));
+  }
 }

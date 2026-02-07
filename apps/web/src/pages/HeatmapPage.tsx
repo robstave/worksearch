@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { applicationsApi } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
 
@@ -30,6 +30,7 @@ interface DayData {
 }
 
 export function HeatmapPage() {
+  const navigate = useNavigate();
   const [data, setData] = useState<DayData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -136,6 +137,12 @@ export function HeatmapPage() {
           Heatmap
         </span>
         <Link
+          to="/analytics/timeline"
+          className="px-4 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+        >
+          Timeline
+        </Link>
+        <Link
           to="/analytics/sankey"
           className="px-4 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
         >
@@ -197,7 +204,12 @@ export function HeatmapPage() {
                       return (
                         <div
                           key={di}
-                          className={`w-[11px] h-[11px] rounded-sm border cursor-pointer transition-all ${LEVEL_COLORS[level]} ${isToday ? 'ring-1 ring-blue-400' : ''}`}
+                          className={`w-[11px] h-[11px] rounded-sm border cursor-pointer transition-all ${LEVEL_COLORS[level]} ${isToday ? 'ring-1 ring-blue-400' : ''} hover:ring-1 hover:ring-white`}
+                          onClick={() => {
+                            if (day.count > 0) {
+                              navigate(`/applications/list?appliedDate=${day.date}`);
+                            }
+                          }}
                           onMouseEnter={(e) => {
                             setHoveredDay(day);
                             const rect = e.currentTarget.getBoundingClientRect();

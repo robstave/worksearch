@@ -220,8 +220,22 @@ export const applicationsApi = {
   getTimeline: (days = 30) => request<{
     timeline: Array<{ date: string; count: number; companies: string[] }>;
   }>(`/applications/analytics/timeline?days=${days}`),
+  getSwimlaneData: () => request<SwimlaneApp[]>('/applications/analytics/swimlane'),
   cleanHot: () => request<{ cleaned: number }>('/applications/clean-hot', { method: 'POST' }),
 };
+
+export interface SwimlaneApp {
+  id: string;
+  company: string;
+  jobTitle: string;
+  appliedAt: string;
+  currentState: AppState;
+  transitions: {
+    fromState: AppState | null;
+    toState: AppState;
+    date: string;
+  }[];
+}
 
 // Job Boards
 export interface JobBoard {

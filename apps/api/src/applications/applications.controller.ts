@@ -123,6 +123,12 @@ export class ApplicationsController {
     return this.applicationsService.getDailyTimeline(ownerId, days ? parseInt(days, 10) : undefined);
   }
 
+  @Get('analytics/swimlane')
+  async getSwimlane(@Req() req: Request) {
+    const ownerId = (req.session as any).userId;
+    return this.applicationsService.getSwimlaneData(ownerId);
+  }
+
   @Post('clean-hot')
   async cleanHot(@Req() req: Request) {
     const ownerId = (req.session as any).userId;

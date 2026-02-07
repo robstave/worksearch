@@ -105,6 +105,8 @@ export class CompaniesService {
             jobTitle: true,
             currentState: true,
             appliedAt: true,
+            hot: true,
+            hotDate: true,
             transitions: {
               orderBy: { transitionedAt: 'desc' },
               take: 1,
@@ -132,6 +134,8 @@ export class CompaniesService {
         jobTitle: a.jobTitle,
         currentState: a.currentState,
         appliedAt: a.appliedAt?.toISOString() ?? null,
+        hot: a.hot,
+        hotDate: a.hotDate?.toISOString() ?? null,
         lastTransitionAt: a.transitions[0]?.transitionedAt?.toISOString() ?? null,
       })),
       createdAt: company.createdAt.toISOString(),

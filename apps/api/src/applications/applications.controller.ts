@@ -122,4 +122,10 @@ export class ApplicationsController {
     const ownerId = (req.session as any).userId;
     return this.applicationsService.getDailyTimeline(ownerId, days ? parseInt(days, 10) : undefined);
   }
+
+  @Post('clean-hot')
+  async cleanHot(@Req() req: Request) {
+    const ownerId = (req.session as any).userId;
+    return this.applicationsService.cleanHot(ownerId);
+  }
 }

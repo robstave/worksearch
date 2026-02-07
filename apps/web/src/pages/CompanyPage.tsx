@@ -1,10 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { companiesApi } from '../api';
+import { companiesApi, applicationsApi } from '../api';
 import type { CompanyDetail, CompanyVisit } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
+
+const FireIcon = ({ active }: { active: boolean }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+    className={`w-5 h-5 transition-colors ${active ? 'text-orange-500' : 'text-gray-600 hover:text-orange-400'}`}
+  >
+    <path
+      fillRule="evenodd"
+      d="M13.5 4.938a7 7 0 11-9.006 1.737c.202-.257.59-.218.793.039.278.352.594.672.943.954.332.269.786-.049.786-.49V6.5a.75.75 0 011.5 0v.667c0 .441.454.759.786.49.349-.282.665-.602.943-.954.203-.257.59-.296.793-.039A7.001 7.001 0 0113.5 4.938zM10 15a3 3 0 100-6 3 3 0 000 6z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
 
 export function CompanyPage() {
   const { id } = useParams<{ id: string }>();
@@ -281,17 +296,36 @@ export function CompanyPage() {
               </div>
             </div>
             {company.applications.length === 0 ? (
-              <p className="text-gray-500 italic">No applications yet.</p>
+              <p className="text-gray-500 italic text-left">No applications yet.</p>
             ) : (
               <div className="space-y-2">
               {company.applications.map((app) => (
-                <Link
+                <div
                   key={app.id}
-                  to={`/applications/${app.id}`}
-                  className="block p-3 bg-gray-700 rounded hover:bg-gray-650 transition-colors"
+                  className="flex items-center gap-2 p-3 bg-gray-700 rounded hover:bg-gray-650 transition-colors"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
+                  <button
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      try {
+                        await applicationsApi.update(app.id, { hot: !app.hot });
+                        // Refresh company data
+                        const updated = await companiesApi.get(company.id);
+                        setCompany(updated);
+                      } catch (err) {
+                        console.error('Failed to toggle hot:', err);
+                      }
+                    }}
+                    className="p-1 rounded hover:bg-gray-600 transition-colors shrink-0"
+                    title={app.hot ? `Hot since ${app.hotDate ? new Date(app.hotDate).toLocaleDateString() : 'unknown'}` : 'Mark as hot'}
+                  >
+                    <FireIcon active={app.hot} />
+                  </button>
+                  <Link
+                    to={`/applications/${app.id}`}
+                    className="flex-1 flex items-center justify-between"
+                  >
+                    <div className="text-left">
                       <span className="text-white font-medium">{app.jobTitle}</span>
                       {app.appliedAt && (
                         <span className="text-xs text-gray-400 ml-3">
@@ -302,8 +336,8 @@ export function CompanyPage() {
                     <span className="text-xs px-2 py-1 rounded bg-gray-600 text-gray-300">
                       {app.currentState}
                     </span>
-                  </div>
-                </Link>
+                  </Link>
+                </div>
               ))}
             </div>
           )}

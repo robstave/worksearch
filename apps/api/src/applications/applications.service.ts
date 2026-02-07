@@ -42,7 +42,7 @@ export class ApplicationsService {
       tag?: string;
       search?: string;
       appliedDate?: string; // YYYY-MM-DD format
-      sort?: 'updatedAt' | 'company' | 'ageInState' | 'appliedAt' | 'jobTitle' | 'state' | 'workLocation';
+      sort?: 'updatedAt' | 'company' | 'ageInState' | 'appliedAt' | 'jobTitle' | 'state' | 'workLocation' | 'hot';
       order?: 'asc' | 'desc';
       page?: number;
       limit?: number;
@@ -100,6 +100,9 @@ export class ApplicationsService {
       orderBy = { workLocation: order };
     } else if (sort === 'updatedAt') {
       orderBy = { updatedAt: order };
+    } else if (sort === 'hot') {
+      // Sort by hot (true first) then by hotDate (most recent first)
+      orderBy = [{ hot: 'desc' }, { hotDate: 'desc' }];
     }
 
     const skip = (page - 1) * limit;
@@ -129,6 +132,8 @@ export class ApplicationsService {
         jobReqUrl: a.jobReqUrl,
         currentState: a.currentState,
         workLocation: a.workLocation,
+        hot: a.hot,
+        hotDate: a.hotDate?.toISOString() ?? null,
         tags: a.tagsList,
         lastTransitionAt: a.transitions[0]?.transitionedAt?.toISOString() ?? null,
         appliedAt: a.appliedAt?.toISOString() ?? null,
@@ -170,6 +175,8 @@ export class ApplicationsService {
       workLocation: app.workLocation,
       easyApply: app.easyApply,
       coverLetter: app.coverLetter,
+      hot: app.hot,
+      hotDate: app.hotDate?.toISOString() ?? null,
       tags: app.tagsList,
       transitions: app.transitions.map((t) => ({
         id: t.id,
@@ -250,6 +257,18 @@ export class ApplicationsService {
       throw new NotFoundException('Application not found');
     }
 
+    // Handle hot toggle: set hotDate when turning on, clear it when turning off
+    let hotUpdate = {};
+    if (dto.hot !== undefined) {
+      if (dto.hot && !app.hot) {
+        // Turning hot ON: set date
+        hotUpdate = { hot: true, hotDate: new Date() };
+      } else if (!dto.hot && app.hot) {
+        // Turning hot OFF: clear date
+        hotUpdate = { hot: false, hotDate: null };
+      }
+    }
+
     const updated = await this.prisma.application.update({
       where: { id },
       data: {
@@ -261,6 +280,7 @@ export class ApplicationsService {
         ...(dto.easyApply !== undefined && { easyApply: dto.easyApply }),
         ...(dto.coverLetter !== undefined && { coverLetter: dto.coverLetter }),
         ...(dto.appliedAt !== undefined && { appliedAt: dto.appliedAt ? new Date(dto.appliedAt) : null }),
+        ...hotUpdate,
       },
       include: {
         company: { select: { id: true, name: true } },
@@ -274,6 +294,8 @@ export class ApplicationsService {
       jobReqUrl: updated.jobReqUrl,
       currentState: updated.currentState,
       workLocation: updated.workLocation,
+      hot: updated.hot,
+      hotDate: updated.hotDate?.toISOString() ?? null,
       tags: updated.tagsList,
       createdAt: updated.createdAt.toISOString(),
       updatedAt: updated.updatedAt.toISOString(),
@@ -525,5 +547,25 @@ export class ApplicationsService {
       .map(([date, data]) => ({ date, count: data.count, companies: data.companies }));
 
     return { timeline };
+  }
+
+  async cleanHot(ownerId: string) {
+    // Un-hot applications where hotDate is older than 1 month
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    const result = await this.prisma.application.updateMany({
+      where: {
+        ownerId,
+        hot: true,
+        hotDate: { lt: oneMonthAgo },
+      },
+      data: {
+        hot: false,
+        hotDate: null,
+      },
+    });
+
+    return { cleaned: result.count };
   }
 }

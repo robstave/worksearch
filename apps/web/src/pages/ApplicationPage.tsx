@@ -55,6 +55,7 @@ export function ApplicationPage() {
   const [workLocation, setWorkLocation] = useState<WorkLocationType | ''>('HYBRID');
   const [easyApply, setEasyApply] = useState(false);
   const [coverLetter, setCoverLetter] = useState(false);
+  const [hot, setHot] = useState(false);
   const [appliedAt, setAppliedAt] = useState('');
   const [description, setDescription] = useState('');
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
@@ -81,6 +82,7 @@ export function ApplicationPage() {
           setWorkLocation(app.workLocation || '');
           setEasyApply(app.easyApply || false);
           setCoverLetter(app.coverLetter || false);
+          setHot(app.hot || false);
           // Format appliedAt for date input (YYYY-MM-DD)
           if (app.appliedAt) {
             const date = new Date(app.appliedAt);
@@ -195,6 +197,7 @@ export function ApplicationPage() {
           workLocation: workLocation || undefined,
           easyApply,
           coverLetter,
+          hot,
           appliedAt: appliedAt || undefined,
           jobDescriptionMd: description,
           tags,
@@ -415,6 +418,15 @@ export function ApplicationPage() {
                 className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500"
               />
               <span>📝 Cover Letter</span>
+            </label>
+            <label className="flex items-center gap-2 text-gray-300 cursor-pointer" title="Hot - high priority opportunity">
+              <input
+                type="checkbox"
+                checked={hot}
+                onChange={(e) => setHot(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-orange-600 focus:ring-orange-500"
+              />
+              <span>🔥 Hot</span>
             </label>
           </div>
 

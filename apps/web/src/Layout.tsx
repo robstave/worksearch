@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { Navigate, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './auth';
 import { useTheme } from './theme';
+import { applicationsApi, companiesApi, eventsApi } from './api';
 
 // Generate a consistent random color based on email
 function getAvatarColor(email: string): string {
@@ -77,6 +78,19 @@ const CalendarIcon = () => (
   </svg>
 );
 
+const DownloadIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+    <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
+    <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+  </svg>
+);
+
+const FireIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+    <path fillRule="evenodd" d="M13.5 4.938a7 7 0 11-9.006 1.737c.202-.257.59-.218.793.039.278.352.594.672.943.954.332.269.786-.049.786-.49V6.5a.75.75 0 011.5 0v.667c0 .441.454.759.786.49.349-.282.665-.602.943-.954.203-.257.59-.296.793-.039A7.001 7.001 0 0113.5 4.938zM10 15a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+  </svg>
+);
+
 export function Layout() {
   const { user, logout, loading } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -121,6 +135,86 @@ export function Layout() {
   const handleMenuClick = (path: string) => {
     setDropdownOpen(false);
     navigate(path);
+  };
+
+  const handleExportData = async () => {
+    setDropdownOpen(false);
+    try {
+      // Fetch all data in parallel
+      const [applicationsRes, companiesRes, eventsRes] = await Promise.all([
+        applicationsApi.list({ limit: 10000 }),
+        companiesApi.list({ limit: 10000 }),
+        eventsApi.list({}),
+      ]);
+
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        user: { email: user?.email, role: user?.role },
+        applications: applicationsRes.items.map((app) => ({
+          id: app.id,
+          company: app.company?.name || null,
+          companyId: app.company?.id || null,
+          jobTitle: app.jobTitle,
+          jobReqUrl: app.jobReqUrl,
+          currentState: app.currentState,
+          workLocation: app.workLocation,
+          tags: app.tags,
+          appliedAt: app.appliedAt,
+          createdAt: app.createdAt,
+          updatedAt: app.updatedAt,
+        })),
+        companies: companiesRes.items.map((c) => ({
+          id: c.id,
+          name: c.name,
+          website: c.website,
+          notesMd: c.notesMd,
+          star: c.star,
+          revisit: c.revisit,
+          createdAt: c.createdAt,
+          updatedAt: c.updatedAt,
+        })),
+        events: eventsRes.items.map((e) => ({
+          id: e.id,
+          title: e.title,
+          type: e.type,
+          scheduledAt: e.scheduledAt,
+          notesMd: e.notesMd,
+          companyId: e.companyId,
+          applicationId: e.applicationId,
+          createdAt: e.createdAt,
+        })),
+      };
+
+      // Create and trigger download
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const date = new Date().toISOString().split('T')[0];
+      a.download = `worksearch-export-${date}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Export failed. Check console for details.');
+    }
+  };
+
+  const handleCheckHot = async () => {
+    setDropdownOpen(false);
+    try {
+      const result = await applicationsApi.cleanHot();
+      if (result.cleaned > 0) {
+        alert(`Cleaned ${result.cleaned} stale hot item${result.cleaned !== 1 ? 's' : ''} (older than 1 month).`);
+      } else {
+        alert('No stale hot items found. All hot items are still fresh!');
+      }
+    } catch (err) {
+      console.error('Check hot failed:', err);
+      alert('Check hot failed. Check console for details.');
+    }
   };
 
   return (
@@ -194,6 +288,20 @@ export function Layout() {
                     >
                       <CalendarIcon />
                       New Event
+                    </button>
+                    <button
+                      onClick={handleExportData}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                    >
+                      <DownloadIcon />
+                      Export Data
+                    </button>
+                    <button
+                      onClick={handleCheckHot}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                    >
+                      <FireIcon />
+                      Check Hot
                     </button>
                     <button
                       onClick={() => {

@@ -119,6 +119,8 @@ model Application {
   workLocation     WorkLocationType? @default(HYBRID)
   easyApply        Boolean  @default(false)
   coverLetter      Boolean  @default(false)
+  hot              Boolean  @default(false)
+  hotDate          DateTime?
   appliedAt        DateTime?
 
   createdAt        DateTime @default(now())

@@ -100,7 +100,8 @@ docs/
 | Transition History | ✅ | ✅ | Inline editing of transition dates and notes |
 | Job Boards | ✅ | ✅ | Save job board bookmarks with markdown notes and search |
 | Work Location Type | ✅ | ✅ | REMOTE/ONSITE/HYBRID/CONTRACT with compact badges (R/O/H/C) |
-| Application Flags | ✅ | ✅ | Easy Apply (⚡) and Cover Letter (📝) checkboxes |
+| Application Flags | ✅ | ✅ | Easy Apply (⚡), Cover Letter (📝), Hot (🔥) checkboxes |
+| Hot Applications | ✅ | ✅ | Fire icon toggle, auto-dated, "Check Hot" cleans stale (>1 month) |
 | Admin User CRUD | ✅ | ✅ | Full admin panel at /admin/users |
 | Sankey Analytics | ✅ | ✅ | State transition flow visualization |
 | Responsive Design | ✅ | ✅ | Card layouts for mobile/tablet, tables for desktop (1024px breakpoint) |

@@ -62,6 +62,8 @@ export interface CompanyDetail extends Company {
     jobTitle: string;
     currentState: AppState;
     appliedAt: string | null;
+    hot: boolean;
+    hotDate: string | null;
     lastTransitionAt: string | null;
   }[];
 }
@@ -129,6 +131,8 @@ export interface Application {
   jobReqUrl: string | null;
   currentState: AppState;
   workLocation: WorkLocationType | null;
+  hot: boolean;
+  hotDate: string | null;
   tags: string[];
   lastTransitionAt: string | null;
   appliedAt: string | null;
@@ -140,6 +144,8 @@ export interface ApplicationDetail extends Application {
   jobDescriptionMd: string;
   easyApply: boolean;
   coverLetter: boolean;
+  hot: boolean;
+  hotDate: string | null;
   transitions: {
     id: string;
     fromState: AppState | null;
@@ -161,7 +167,7 @@ export const applicationsApi = {
     companyId?: string;
     search?: string;
     appliedDate?: string;
-    sort?: 'updatedAt' | 'company' | 'appliedAt' | 'jobTitle' | 'state' | 'workLocation';
+    sort?: 'updatedAt' | 'company' | 'appliedAt' | 'jobTitle' | 'state' | 'workLocation' | 'hot';
     order?: 'asc' | 'desc';
     page?: number;
     limit?: number;
@@ -189,7 +195,7 @@ export const applicationsApi = {
     coverLetter?: boolean;
     initialState?: AppState;
   }) => request<Application>('/applications', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType; easyApply?: boolean; coverLetter?: boolean; appliedAt?: string }) =>
+  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType; easyApply?: boolean; coverLetter?: boolean; hot?: boolean; appliedAt?: string }) =>
     request<Application>(`/applications/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   move: (id: string, toState: AppState, note?: string) =>
     request<{ applicationId: string; fromState: AppState; toState: AppState; transitionedAt: string }>(
@@ -214,6 +220,7 @@ export const applicationsApi = {
   getTimeline: (days = 30) => request<{
     timeline: Array<{ date: string; count: number; companies: string[] }>;
   }>(`/applications/analytics/timeline?days=${days}`),
+  cleanHot: () => request<{ cleaned: number }>('/applications/clean-hot', { method: 'POST' }),
 };
 
 // Job Boards

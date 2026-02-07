@@ -41,12 +41,27 @@ const WorkLocationBadge = ({ location }: { location: string | null | undefined }
   );
 };
 
+const FireIcon = ({ active }: { active: boolean }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+    className={`w-5 h-5 transition-colors ${active ? 'text-orange-500' : 'text-gray-600 hover:text-orange-400'}`}
+  >
+    <path
+      fillRule="evenodd"
+      d="M13.5 4.938a7 7 0 11-9.006 1.737c.202-.257.59-.218.793.039.278.352.594.672.943.954.332.269.786-.049.786-.49V6.5a.75.75 0 011.5 0v.667c0 .441.454.759.786.49.349-.282.665-.602.943-.954.203-.257.59-.296.793-.039A7.001 7.001 0 0113.5 4.938zM10 15a3 3 0 100-6 3 3 0 000 6z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
 export function ListPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [applications, setApplications] = useState<Application[]>([]);
   const [stats, setStats] = useState<{ applied: number; interviewed: number; passedOn: number } | null>(null);
-  const [timeline, setTimeline] = useState<Array<{ date: string; count: number }>>([]);
+  const [timeline, setTimeline] = useState<Array<{ date: string; count: number; companies: string[] }>>([]);
   const [timelineDays, setTimelineDays] = useState(30);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -56,7 +71,7 @@ export function ListPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [sortField, setSortField] = useState<'updatedAt' | 'company' | 'appliedAt' | 'jobTitle' | 'state' | 'workLocation'>('updatedAt');
+  const [sortField, setSortField] = useState<'updatedAt' | 'company' | 'appliedAt' | 'jobTitle' | 'state' | 'workLocation' | 'hot'>('updatedAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const limit = 20;
 
@@ -105,6 +120,23 @@ export function ListPage() {
     } else {
       setSortField(field);
       setSortOrder('desc');
+    }
+  };
+
+  const handleToggleHot = async (e: React.MouseEvent, app: Application) => {
+    e.stopPropagation(); // Don't navigate to detail page
+    try {
+      await applicationsApi.update(app.id, { hot: !app.hot });
+      // Update local state
+      setApplications((prev) =>
+        prev.map((a) =>
+          a.id === app.id
+            ? { ...a, hot: !a.hot, hotDate: !a.hot ? new Date().toISOString() : null }
+            : a
+        )
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to toggle hot');
     }
   };
 
@@ -305,6 +337,7 @@ export function ListPage() {
                 <option value="company-desc">Company Z-A</option>
                 <option value="jobTitle-asc">Title A-Z</option>
                 <option value="state-asc">State</option>
+                <option value="hot-desc">Hot 🔥</option>
               </select>
             </div>
             
@@ -317,6 +350,13 @@ export function ListPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={(e) => handleToggleHot(e, app)}
+                        className="p-0.5 rounded hover:bg-gray-700 transition-colors"
+                        title={app.hot ? `Hot since ${app.hotDate ? new Date(app.hotDate).toLocaleDateString() : 'unknown'}` : 'Mark as hot'}
+                      >
+                        <FireIcon active={app.hot} />
+                      </button>
                       <span className="text-white font-medium truncate">{app.company.name}</span>
                       <WorkLocationBadge location={app.workLocation} />
                     </div>
@@ -341,6 +381,7 @@ export function ListPage() {
             <table className="w-full table-fixed">
               <thead className="bg-gray-700">
                 <tr>
+                  <th className="w-10 px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">🔥</th>
                   <SortHeader field="company" className="w-1/6">Company</SortHeader>
                   <SortHeader field="jobTitle" className="w-2/6">Job Title</SortHeader>
                   <SortHeader field="workLocation" className="w-12">Loc</SortHeader>
@@ -356,6 +397,15 @@ export function ListPage() {
                     onClick={() => navigate(`/applications/${app.id}`)}
                     className="hover:bg-gray-700 cursor-pointer"
                   >
+                    <td className="px-2 py-3 text-center">
+                      <button
+                        onClick={(e) => handleToggleHot(e, app)}
+                        className="p-1 rounded hover:bg-gray-600 transition-colors"
+                        title={app.hot ? `Hot since ${app.hotDate ? new Date(app.hotDate).toLocaleDateString() : 'unknown'}` : 'Mark as hot'}
+                      >
+                        <FireIcon active={app.hot} />
+                      </button>
+                    </td>
                     <td className="px-4 py-3 text-left text-white font-medium truncate">{app.company.name}</td>
                     <td className="px-4 py-3 text-left text-gray-300 truncate">{app.jobTitle}</td>
                     <td className="px-4 py-3 text-left">

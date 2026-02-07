@@ -87,6 +87,10 @@ export class UpdateApplicationDto {
   coverLetter?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  hot?: boolean;
+
+  @IsOptional()
   @IsDateString()
   appliedAt?: string;
 }

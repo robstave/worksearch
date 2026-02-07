@@ -7,9 +7,10 @@ import { CompaniesModule } from './companies/companies.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { JobBoardsModule } from './job-boards/job-boards.module';
 import { AdminModule } from './admin/admin.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, CompaniesModule, ApplicationsModule, JobBoardsModule, AdminModule],
+  imports: [PrismaModule, AuthModule, CompaniesModule, ApplicationsModule, JobBoardsModule, AdminModule, EventsModule],
   controllers: [AppController],
   providers: [AppService],
 })

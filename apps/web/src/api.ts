@@ -255,6 +255,64 @@ export interface AdminUser {
   jobBoardsCount?: number;
 }
 
+// Events / Calendar
+export type CalendarEventType =
+  | 'SCREENING'
+  | 'INTERVIEW'
+  | 'TECH_SCREENING'
+  | 'TODO'
+  | 'MEETUP'
+  | 'FOLLOWUP'
+  | 'CALL'
+  | 'DEADLINE'
+  | 'NONE'
+  | 'OTHER';
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  type: CalendarEventType;
+  scheduledAt: string;
+  notesMd: string;
+  companyId: string | null;
+  applicationId: string | null;
+  company: { id: string; name: string } | null;
+  application: { id: string; jobTitle: string } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const eventsApi = {
+  list: (options?: { from?: string; to?: string; companyId?: string; applicationId?: string; type?: CalendarEventType }) => {
+    const params = new URLSearchParams();
+    if (options?.from) params.set('from', options.from);
+    if (options?.to) params.set('to', options.to);
+    if (options?.companyId) params.set('companyId', options.companyId);
+    if (options?.applicationId) params.set('applicationId', options.applicationId);
+    if (options?.type) params.set('type', options.type);
+    const query = params.toString();
+    return request<{ items: CalendarEvent[] }>(`/events${query ? `?${query}` : ''}`);
+  },
+  get: (id: string) => request<CalendarEvent>(`/events/${id}`),
+  create: (data: {
+    title: string;
+    type?: CalendarEventType;
+    scheduledAt: string;
+    notesMd?: string;
+    companyId?: string;
+    applicationId?: string;
+  }) => request<CalendarEvent>('/events', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: {
+    title?: string;
+    type?: CalendarEventType;
+    scheduledAt?: string;
+    notesMd?: string;
+    companyId?: string;
+    applicationId?: string;
+  }) => request<CalendarEvent>(`/events/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  delete: (id: string) => request<void>(`/events/${id}`, { method: 'DELETE' }),
+};
+
 export const adminApi = {
   listUsers: () => request<AdminUser[]>('/admin/users'),
   getUser: (id: string) => request<AdminUser>(`/admin/users/${id}`),

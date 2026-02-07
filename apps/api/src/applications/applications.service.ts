@@ -150,7 +150,7 @@ export class ApplicationsService {
         transitions: {
           orderBy: { transitionedAt: 'desc' },
         },
-        events: {
+        applicationEvents: {
           orderBy: { at: 'asc' },
         },
       },
@@ -178,7 +178,7 @@ export class ApplicationsService {
         transitionedAt: t.transitionedAt.toISOString(),
         note: t.note,
       })),
-      events: app.events.map((e) => ({
+      events: app.applicationEvents.map((e) => ({
         id: e.id,
         type: e.type,
         at: e.at.toISOString(),

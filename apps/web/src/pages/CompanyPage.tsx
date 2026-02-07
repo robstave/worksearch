@@ -265,12 +265,20 @@ export function CompanyPage() {
               <h2 className="text-xl font-semibold text-white">
                 Applications ({company.applications.length})
               </h2>
-              <Button
-                onClick={() => navigate('/applications/new', { state: { companyId: company.id, companyName: company.name } })}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                + New Application
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => navigate('/events/new', { state: { companyId: company.id, companyName: company.name } })}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  📅 Add Event
+                </Button>
+                <Button
+                  onClick={() => navigate('/applications/new', { state: { companyId: company.id, companyName: company.name } })}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  + New Application
+                </Button>
+              </div>
             </div>
             {company.applications.length === 0 ? (
               <p className="text-gray-500 italic">No applications yet.</p>

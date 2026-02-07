@@ -512,6 +512,25 @@ export function ApplicationPage() {
               </div>
             </div>
           )}
+
+          {/* Add Event Button (only for existing) */}
+          {!isNew && application && (
+            <div>
+              <Button
+                onClick={() => navigate('/events/new', {
+                  state: {
+                    applicationId: application.id,
+                    companyId: application.company.id,
+                    companyName: application.company.name,
+                    applicationTitle: `${application.company.name} — ${application.jobTitle}`,
+                  }
+                })}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                📅 Add Event
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Actions */}

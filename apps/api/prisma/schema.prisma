@@ -39,10 +39,15 @@ enum WorkLocationType {
 }
 
 enum EventType {
+  SCREENING
   INTERVIEW
+  TECH_SCREENING
+  TODO
+  MEETUP
   FOLLOWUP
   CALL
   DEADLINE
+  NONE
   OTHER
 }
 
@@ -60,6 +65,7 @@ model User {
   companyTags     CompanyTag[]
   applicationTags ApplicationTag[]
   jobBoards       JobBoard[]
+  events          Event[]
 }
 
 model Company {
@@ -77,6 +83,7 @@ model Company {
   apps      Application[]
   tags      CompanyTagMap[]
   visits    CompanyVisit[]
+  events    Event[]
 
   @@unique([ownerId, name])
   @@index([ownerId])
@@ -122,7 +129,8 @@ model Application {
 
   transitions      StateTransition[]
   tags             ApplicationTagMap[]
-  events           ApplicationEvent[]
+  applicationEvents ApplicationEvent[]
+  events           Event[]
 
   @@index([ownerId, currentState])
   @@index([companyId])
@@ -212,4 +220,27 @@ model ApplicationEvent {
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@index([applicationId, at])
+}
+
+model Event {
+  id              String     @id @default(cuid())
+  ownerId         String
+  title           String
+  type            EventType  @default(NONE)
+  scheduledAt     DateTime
+  notesMd         String     @default("")
+
+  companyId       String?
+  applicationId   String?
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  owner           User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  company         Company?    @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  application     Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId, scheduledAt])
+  @@index([companyId])
+  @@index([applicationId])
 }

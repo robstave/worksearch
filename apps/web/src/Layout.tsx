@@ -27,6 +27,7 @@ function getAvatarLetter(email: string): string {
 const NAV_ITEMS = [
   { path: '/applications/list', label: 'List' },
   { path: '/applications/board', label: 'Board' },
+  { path: '/calendar', label: 'Calendar' },
   { path: '/analytics/sankey', label: 'Analytics' },
   { path: '/companies', label: 'Companies' },
   { path: '/job-boards', label: 'Job Boards' },
@@ -67,6 +68,12 @@ const LogoutIcon = () => (
 const ShieldIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
     <path fillRule="evenodd" d="M9.661 2.237a.531.531 0 01.678 0 11.947 11.947 0 007.078 2.749.5.5 0 01.479.425c.069.52.104 1.05.104 1.59 0 5.162-3.26 9.563-7.834 11.256a.48.48 0 01-.332 0C5.26 16.564 2 12.163 2 7c0-.538.035-1.069.104-1.589a.5.5 0 01.48-.425 11.947 11.947 0 007.077-2.75z" clipRule="evenodd" />
+  </svg>
+);
+
+const CalendarIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+    <path fillRule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clipRule="evenodd" />
   </svg>
 );
 
@@ -180,6 +187,13 @@ export function Layout() {
                     >
                       <CogIcon />
                       Settings
+                    </button>
+                    <button
+                      onClick={() => handleMenuClick('/events/new')}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                    >
+                      <CalendarIcon />
+                      New Event
                     </button>
                     <button
                       onClick={() => {

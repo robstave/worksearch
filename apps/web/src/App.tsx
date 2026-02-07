@@ -12,6 +12,8 @@ import { ApplicationPage } from './pages/ApplicationPage';
 import { JobBoardsPage } from './pages/JobBoardsPage';
 import { JobBoardPage } from './pages/JobBoardPage';
 import { SankeyPage } from './pages/SankeyPage';
+import { CalendarPage } from './pages/CalendarPage';
+import { EventPage } from './pages/EventPage';
 import { AdminUsersPage } from './pages/AdminUsersPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -30,6 +32,8 @@ function App() {
                 <Route path="/applications/list" element={<ListPage />} />
                 <Route path="/applications/:id" element={<ApplicationPage />} />
                 <Route path="/analytics/sankey" element={<SankeyPage />} />
+                <Route path="/calendar" element={<CalendarPage />} />
+                <Route path="/events/:id" element={<EventPage />} />
                 <Route path="/companies" element={<CompaniesPage />} />
                 <Route path="/companies/:id" element={<CompanyPage />} />
                 <Route path="/job-boards" element={<JobBoardsPage />} />

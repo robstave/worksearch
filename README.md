@@ -224,6 +224,21 @@ docker compose exec api npm run db:seed
 docker compose exec api npx prisma studio
 ```
 
+### Backup & Restore
+
+**⚠️ Important:** Always backup before running migrations or resets!
+
+```bash
+# Create a backup
+docker compose exec db pg_dump -U postgres worksearch > backup-$(date +%Y%m%d-%H%M%S).sql
+
+# Restore from backup (⚠️ will overwrite current data)
+docker compose exec -T db psql -U postgres worksearch < backup-20260206-210000.sql
+
+# Quick backup before risky operations
+docker compose exec db pg_dump -U postgres worksearch > backup-before-migration.sql
+```
+
 ### Logs
 
 ```bash

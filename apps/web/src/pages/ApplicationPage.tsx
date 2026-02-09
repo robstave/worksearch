@@ -311,16 +311,33 @@ export function ApplicationPage() {
         <div className="space-y-6">
           {/* Applied Date (for existing applications - moved to top) */}
           {!isNew && (
-            <div>
-              <label className="block text-left text-sm font-medium text-gray-300 mb-1">
-                Applied Date
-              </label>
-              <input
-                type="date"
-                value={appliedAt}
-                onChange={(e) => setAppliedAt(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+            <div className="flex items-end justify-between gap-4">
+              <div className="flex-1">
+                <label className="block text-left text-sm font-medium text-gray-300 mb-1">
+                  Applied Date
+                </label>
+                <input
+                  type="date"
+                  value={appliedAt}
+                  onChange={(e) => setAppliedAt(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              {application && (
+                <Button
+                  onClick={() => navigate('/events/new', {
+                    state: {
+                      applicationId: application.id,
+                      companyId: application.company.id,
+                      companyName: application.company.name,
+                      applicationTitle: `${application.company.name} — ${application.jobTitle}`,
+                    }
+                  })}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  📅 Add Event
+                </Button>
+              )}
             </div>
           )}
 
@@ -522,25 +539,6 @@ export function ApplicationPage() {
                   </button>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Add Event Button (only for existing) */}
-          {!isNew && application && (
-            <div>
-              <Button
-                onClick={() => navigate('/events/new', {
-                  state: {
-                    applicationId: application.id,
-                    companyId: application.company.id,
-                    companyName: application.company.name,
-                    applicationTitle: `${application.company.name} — ${application.jobTitle}`,
-                  }
-                })}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                📅 Add Event
-              </Button>
             </div>
           )}
         </div>

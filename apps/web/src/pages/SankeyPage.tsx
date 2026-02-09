@@ -102,7 +102,7 @@ export function SankeyPage() {
                 value: data.links.map((l) => l.value),
                 color: data.links.map((l) => {
                   const sourceNode = data.nodes[l.source];
-                  return colorMap[sourceNode.name] + '40'; // Add transparency
+                  return (STATE_COLORS[sourceNode.name] || '#6b7280') + '40'; // Add transparency
                 }),
               },
             },
@@ -128,7 +128,7 @@ export function SankeyPage() {
         />
 
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Object.entries(colorMap)
+          {Object.entries(STATE_COLORS)
             .filter(([key]) => data.nodes.some((n) => n.name === key))
             .map(([state, color]) => (
               <div key={state} className="flex items-center gap-2">

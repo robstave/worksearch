@@ -53,6 +53,10 @@ export class CreateApplicationDto {
   @IsOptional()
   @IsEnum(AppState)
   initialState?: AppState;
+
+  @IsOptional()
+  @IsDateString()
+  appliedAt?: string;
 }
 
 export class UpdateApplicationDto {

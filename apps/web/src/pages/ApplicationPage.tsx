@@ -56,7 +56,11 @@ export function ApplicationPage() {
   const [easyApply, setEasyApply] = useState(false);
   const [coverLetter, setCoverLetter] = useState(false);
   const [hot, setHot] = useState(false);
-  const [appliedAt, setAppliedAt] = useState('');
+  const [appliedAt, setAppliedAt] = useState(() => {
+    // Initialize appliedAt to today's date in YYYY-MM-DD format
+    const today = new Date();
+    return today.toISOString().slice(0, 10);
+  });
   const [description, setDescription] = useState('');
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
@@ -184,6 +188,7 @@ export function ApplicationPage() {
           easyApply,
           coverLetter,
           initialState,
+          appliedAt: initialState === 'APPLIED' ? appliedAt : undefined,
         });
         // If tags were added, update them
         if (tags.length > 0) {
@@ -295,51 +300,52 @@ export function ApplicationPage() {
               </div>
             )}
           </div>
-          {!isNew && application?.jobReqUrl && (
-            <a
-              href={application.jobReqUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 text-sm"
-            >
-              View Job Posting ↗
-            </a>
+          {!isNew && application && (
+            <div className="flex flex-col items-end gap-2">
+              {application.jobReqUrl && (
+                <a
+                  href={application.jobReqUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 text-sm"
+                >
+                  View Job Posting ↗
+                </a>
+              )}
+              <Button
+                onClick={() => navigate('/events/new', {
+                  state: {
+                    applicationId: application.id,
+                    companyId: application.company.id,
+                    companyName: application.company.name,
+                    applicationTitle: `${application.company.name} — ${application.jobTitle}`,
+                  }
+                })}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                📅 Add Event
+              </Button>
+            </div>
           )}
         </div>
 
         {/* Form */}
         <div className="space-y-6">
-          {/* Applied Date (for existing applications - moved to top) */}
-          {!isNew && (
-            <div className="flex items-end justify-between gap-4">
-              <div className="flex-1">
-                <label className="block text-left text-sm font-medium text-gray-300 mb-1">
-                  Applied Date
-                </label>
-                <input
-                  type="date"
-                  value={appliedAt}
-                  onChange={(e) => setAppliedAt(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              {application && (
-                <Button
-                  onClick={() => navigate('/events/new', {
-                    state: {
-                      applicationId: application.id,
-                      companyId: application.company.id,
-                      companyName: application.company.name,
-                      applicationTitle: `${application.company.name} — ${application.jobTitle}`,
-                    }
-                  })}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
-                  📅 Add Event
-                </Button>
+          {/* Applied Date */}
+          <div>
+            <label className="block text-left text-sm font-medium text-gray-300 mb-1">
+              Applied Date
+              {isNew && (
+                <span className="text-gray-500 text-xs ml-2">(only for APPLIED applications)</span>
               )}
-            </div>
-          )}
+            </label>
+            <input
+              type="date"
+              value={appliedAt}
+              onChange={(e) => setAppliedAt(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
           {/* Company (only for new) */}
           {isNew && (

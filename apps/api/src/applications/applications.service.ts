@@ -209,6 +209,14 @@ export class ApplicationsService {
 
     const initialState = dto.initialState || AppState.INTERESTED;
 
+    // Determine appliedAt: use provided date if given, else set to today if initialState is APPLIED, else null
+    let appliedAt: Date | null = null;
+    if (dto.appliedAt) {
+      appliedAt = new Date(dto.appliedAt);
+    } else if (initialState === AppState.APPLIED) {
+      appliedAt = new Date();
+    }
+
     const app = await this.prisma.application.create({
       data: {
         ownerId,
@@ -220,7 +228,7 @@ export class ApplicationsService {
         coverLetter: dto.coverLetter ?? false,
         jobDescriptionMd: dto.jobDescriptionMd ?? '',
         currentState: initialState as PrismaAppState,
-        appliedAt: initialState === AppState.APPLIED ? new Date() : null,
+        appliedAt,
         transitions: {
           create: {
             fromState: null,

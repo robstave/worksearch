@@ -194,6 +194,7 @@ export const applicationsApi = {
     easyApply?: boolean;
     coverLetter?: boolean;
     initialState?: AppState;
+    appliedAt?: string;
   }) => request<Application>('/applications', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType; easyApply?: boolean; coverLetter?: boolean; hot?: boolean; appliedAt?: string }) =>
     request<Application>(`/applications/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),

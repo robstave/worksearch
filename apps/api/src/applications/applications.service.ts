@@ -338,6 +338,7 @@ export class ApplicationsService {
         toState: toState as PrismaAppState,
         note: dto.note ?? null,
         actorUserId: ownerId,
+        ...(dto.transitionedAt && { transitionedAt: new Date(dto.transitionedAt) }),
       },
     });
 

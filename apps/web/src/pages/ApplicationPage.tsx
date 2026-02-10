@@ -221,7 +221,15 @@ export function ApplicationPage() {
 
     setSaving(true);
     try {
-      await applicationsApi.move(id, toState);
+      // For GHOSTED transitions, default to appliedAt + 30 days
+      let transitionedAt: string | undefined;
+      if (toState === 'GHOSTED' && application?.appliedAt) {
+        const ghostDate = new Date(application.appliedAt);
+        ghostDate.setDate(ghostDate.getDate() + 30);
+        transitionedAt = ghostDate.toISOString();
+      }
+
+      await applicationsApi.move(id, toState, { transitionedAt });
       const updated = await applicationsApi.get(id);
       setApplication(updated);
     } catch (err) {

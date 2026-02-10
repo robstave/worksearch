@@ -106,6 +106,10 @@ export class MoveApplicationDto {
   @IsOptional()
   @IsString()
   note?: string;
+
+  @IsOptional()
+  @IsDateString()
+  transitionedAt?: string;
 }
 
 export class UpdateTransitionDto {

@@ -5,13 +5,13 @@ Create a timestamped backup of the WorkSearch PostgreSQL database.
 ## Command
 
 ```bash
-docker compose exec db pg_dump -U postgres worksearch > backup-$(date +%Y%m%d-%H%M%S).sql
+docker compose exec -T db sh -c 'pg_dump -U $POSTGRES_USER $POSTGRES_DB' > backup-$(date +%Y%m%d-%H%M%S).sql
 ```
 
 ## What it does
 
-- Connects to the PostgreSQL container
-- Dumps the entire `worksearch` database to a SQL file
+- Connects to the PostgreSQL container using container environment variables
+- Dumps the entire database to a SQL file
 - Names the file with current timestamp (e.g., `backup-20260207-143022.sql`)
 
 ## When to use

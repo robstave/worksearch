@@ -10,7 +10,7 @@ This will **overwrite all current data** in the database with the backup content
 
 ```bash
 # Replace 'backup-20260207-143022.sql' with your actual backup filename
-docker compose exec -T db psql -U postgres worksearch < backup-20260207-143022.sql
+docker compose exec -T db sh -c 'psql -U $POSTGRES_USER $POSTGRES_DB' < backup-20260207-143022.sql
 ```
 
 ## Steps
@@ -22,7 +22,7 @@ docker compose exec -T db psql -U postgres worksearch < backup-20260207-143022.s
 
 2. **Restore from backup**:
    ```bash
-   docker compose exec -T db psql -U postgres worksearch < backup-YYYYMMDD-HHMMSS.sql
+   docker compose exec -T db sh -c 'psql -U $POSTGRES_USER $POSTGRES_DB' < backup-YYYYMMDD-HHMMSS.sql
    ```
 
 3. **Restart the API**:
@@ -34,13 +34,13 @@ docker compose exec -T db psql -U postgres worksearch < backup-20260207-143022.s
 
 ```bash
 # Check company count
-docker compose exec -T db psql -U postgres worksearch -c "SELECT COUNT(*) FROM \"Company\";"
+docker compose exec -T db sh -c 'psql -U $POSTGRES_USER $POSTGRES_DB -c "SELECT COUNT(*) FROM \"Company\";"'
 
 # Check application count
-docker compose exec -T db psql -U postgres worksearch -c "SELECT COUNT(*) FROM \"Application\";"
+docker compose exec -T db sh -c 'psql -U $POSTGRES_USER $POSTGRES_DB -c "SELECT COUNT(*) FROM \"Application\";"'
 
 # Check users
-docker compose exec -T db psql -U postgres worksearch -c "SELECT email, role FROM \"User\";"
+docker compose exec -T db sh -c 'psql -U $POSTGRES_USER $POSTGRES_DB -c "SELECT email, role FROM \"User\";"'
 ```
 
 ## Troubleshooting
@@ -49,15 +49,15 @@ If restore fails with "relation already exists" errors:
 
 1. **Drop and recreate the database**:
    ```bash
-   docker compose exec db psql -U postgres -c "DROP DATABASE worksearch;"
-   docker compose exec db psql -U postgres -c "CREATE DATABASE worksearch;"
-   docker compose exec -T db psql -U postgres worksearch < backup-YYYYMMDD-HHMMSS.sql
+   docker compose exec db sh -c 'psql -U $POSTGRES_USER -c "DROP DATABASE $POSTGRES_DB;"'
+   docker compose exec db sh -c 'psql -U $POSTGRES_USER -c "CREATE DATABASE $POSTGRES_DB;"'
+   docker compose exec -T db sh -c 'psql -U $POSTGRES_USER $POSTGRES_DB' < backup-YYYYMMDD-HHMMSS.sql
    ```
 
 2. **Or use a clean restore**:
    ```bash
    docker compose exec api npx prisma migrate reset --force
-   docker compose exec -T db psql -U postgres worksearch < backup-YYYYMMDD-HHMMSS.sql
+   docker compose exec -T db sh -c 'psql -U $POSTGRES_USER $POSTGRES_DB' < backup-YYYYMMDD-HHMMSS.sql
    ```
 
 ## Notes

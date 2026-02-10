@@ -198,10 +198,10 @@ export const applicationsApi = {
   }) => request<Application>('/applications', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType; easyApply?: boolean; coverLetter?: boolean; hot?: boolean; appliedAt?: string }) =>
     request<Application>(`/applications/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  move: (id: string, toState: AppState, note?: string) =>
+  move: (id: string, toState: AppState, options?: { note?: string; transitionedAt?: string }) =>
     request<{ applicationId: string; fromState: AppState; toState: AppState; transitionedAt: string }>(
       `/applications/${id}/move`,
-      { method: 'POST', body: JSON.stringify({ toState, note }) }
+      { method: 'POST', body: JSON.stringify({ toState, ...options }) }
     ),
   updateTransition: (applicationId: string, transitionId: string, data: { transitionedAt?: string; note?: string }) =>
     request<{ id: string; transitionedAt: string; note: string | null }>(

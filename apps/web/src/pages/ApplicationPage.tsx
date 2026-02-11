@@ -164,7 +164,7 @@ export function ApplicationPage() {
     }
   };
 
-  const handleSave = async (initialState?: AppState) => {
+  const handleSave = async (initialState?: AppState, closeAfter = false) => {
     if (!jobTitle.trim()) {
       setError('Job title is required');
       return;
@@ -207,7 +207,13 @@ export function ApplicationPage() {
           jobDescriptionMd: description,
           tags,
         });
-        navigate('/applications/list');
+        if (closeAfter) {
+          navigate('/applications/list');
+        } else {
+          // Reload to reflect saved state
+          const updated = await applicationsApi.get(id);
+          setApplication(updated);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
@@ -595,13 +601,22 @@ export function ApplicationPage() {
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => handleSave()}
-                disabled={saving}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-md transition-colors"
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
+              <>
+                <button
+                  onClick={() => handleSave()}
+                  disabled={saving}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 text-white rounded-md transition-colors"
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  onClick={() => handleSave(undefined, true)}
+                  disabled={saving}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-md transition-colors"
+                >
+                  {saving ? 'Saving...' : 'Save & Close'}
+                </button>
+              </>
             )}
           </div>
         </div>

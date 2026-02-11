@@ -5,27 +5,35 @@ export function ProfilePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Profile</h1>
+      <h1 className="text-2xl font-bold text-white mb-6 text-left">Profile</h1>
       <div className="bg-gray-800 rounded-lg p-6">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label className="block text-left text-sm font-medium text-gray-400 mb-1">
               Email
             </label>
-            <p className="text-white">
+            <p className="text-white text-left">
               {user?.email}
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label className="block text-left text-sm font-medium text-gray-400 mb-1">
               Role
             </label>
-            <p className="text-white capitalize">
+            <p className="text-white text-left capitalize">
               {user?.role}
             </p>
           </div>
+          <div>
+            <label className="block text-left text-sm font-medium text-gray-400 mb-1">
+              Timezone
+            </label>
+            <p className="text-white text-left">
+              {user?.timezone || 'Not set'}
+            </p>
+          </div>
         </div>
-        <p className="text-gray-500 mt-6 text-sm">
+        <p className="text-gray-500 mt-6 text-sm text-left">
           More profile options coming soon...
         </p>
       </div>

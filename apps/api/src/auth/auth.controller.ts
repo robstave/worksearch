@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Body,
   Req,
   Res,
@@ -12,6 +13,7 @@ import {
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -32,6 +34,7 @@ export class AuthController {
       id: user.id,
       email: user.email,
       role: user.role,
+      timezone: user.timezone,
     };
   }
 
@@ -65,6 +68,25 @@ export class AuthController {
       id: user.id,
       email: user.email,
       role: user.role,
+      timezone: user.timezone,
+    };
+  }
+
+  @Patch('profile')
+  async updateProfile(@Req() req: Request, @Body() dto: UpdateProfileDto) {
+    const userId = (req.session as any).userId;
+    
+    if (!userId) {
+      throw new UnauthorizedException('Not authenticated');
+    }
+
+    const user = await this.authService.updateProfile(userId, dto);
+    
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      timezone: user.timezone,
     };
   }
 }

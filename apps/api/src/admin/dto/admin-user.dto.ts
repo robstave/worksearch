@@ -27,6 +27,10 @@ export class UpdateUserDto {
   @IsEnum(RoleDto)
   @IsOptional()
   role?: RoleDto;
+
+  @IsString()
+  @IsOptional()
+  timezone?: string;
 }
 
 export class SetPasswordDto {
@@ -39,6 +43,7 @@ export class UserResponseDto {
   id: string;
   email: string;
   role: string;
+  timezone: string;
   createdAt: string;
   updatedAt: string;
 }

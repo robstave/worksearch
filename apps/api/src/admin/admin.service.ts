@@ -18,6 +18,7 @@ export class AdminService {
         id: true,
         email: true,
         role: true,
+        timezone: true,
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -34,6 +35,7 @@ export class AdminService {
       id: u.id,
       email: u.email,
       role: u.role,
+      timezone: u.timezone,
       createdAt: u.createdAt.toISOString(),
       updatedAt: u.updatedAt.toISOString(),
       companiesCount: u._count.companies,
@@ -48,6 +50,7 @@ export class AdminService {
         id: true,
         email: true,
         role: true,
+        timezone: true,
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -68,6 +71,7 @@ export class AdminService {
       id: user.id,
       email: user.email,
       role: user.role,
+      timezone: user.timezone,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
       companiesCount: user._count.companies,
@@ -98,6 +102,7 @@ export class AdminService {
         id: true,
         email: true,
         role: true,
+        timezone: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -107,6 +112,7 @@ export class AdminService {
       id: user.id,
       email: user.email,
       role: user.role,
+      timezone: user.timezone,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     };
@@ -137,11 +143,13 @@ export class AdminService {
       data: {
         ...(dto.email !== undefined && { email: dto.email }),
         ...(dto.role !== undefined && { role: dto.role }),
+        ...(dto.timezone !== undefined && { timezone: dto.timezone }),
       },
       select: {
         id: true,
         email: true,
         role: true,
+        timezone: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -151,6 +159,7 @@ export class AdminService {
       id: updated.id,
       email: updated.email,
       role: updated.role,
+      timezone: updated.timezone,
       createdAt: updated.createdAt.toISOString(),
       updatedAt: updated.updatedAt.toISOString(),
     };

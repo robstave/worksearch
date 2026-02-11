@@ -4,7 +4,6 @@ import ReactMarkdown from 'react-markdown';
 import { eventsApi, companiesApi, applicationsApi } from '../api';
 import type { CalendarEvent, CalendarEventType, Company, Application } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
-import { Button } from '@/components/ui/button';
 
 const EVENT_TYPE_OPTIONS: { value: CalendarEventType; label: string; icon: string }[] = [
   { value: 'SCREENING', label: 'Screening', icon: '📋' },
@@ -18,6 +17,16 @@ const EVENT_TYPE_OPTIONS: { value: CalendarEventType; label: string; icon: strin
   { value: 'NONE', label: 'None', icon: '📅' },
   { value: 'OTHER', label: 'Other', icon: '📌' },
 ];
+
+// Helper to format date for datetime-local input (preserves local timezone)
+const formatDateTimeLocal = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
 
 export function EventPage() {
   const { id } = useParams<{ id: string }>();
@@ -57,7 +66,7 @@ export function EventPage() {
           setEvent(eventData);
           setTitle(eventData.title);
           setEventType(eventData.type);
-          setScheduledAt(new Date(eventData.scheduledAt).toISOString().slice(0, 16));
+          setScheduledAt(formatDateTimeLocal(new Date(eventData.scheduledAt)));
           setNotesMd(eventData.notesMd || '');
           setCompanyId(eventData.companyId || '');
           setApplicationId(eventData.applicationId || '');
@@ -76,7 +85,7 @@ export function EventPage() {
           // Default scheduled time to now + 1 hour, rounded to next hour
           const defaultTime = new Date();
           defaultTime.setHours(defaultTime.getHours() + 1, 0, 0, 0);
-          setScheduledAt(defaultTime.toISOString().slice(0, 16));
+          setScheduledAt(formatDateTimeLocal(defaultTime));
           // Auto-set title based on context
           if (state?.applicationTitle) {
             setTitle(`${state.applicationTitle}`);

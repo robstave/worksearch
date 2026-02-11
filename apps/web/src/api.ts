@@ -30,6 +30,7 @@ export interface User {
   id: string;
   email: string;
   role: 'admin' | 'aiuser' | 'user';
+  timezone: string;
 }
 
 export const authApi = {
@@ -40,6 +41,11 @@ export const authApi = {
     }),
   logout: () => request<void>('/auth/logout', { method: 'POST' }),
   me: () => request<User>('/auth/me'),
+  updateProfile: (data: { timezone?: string }) =>
+    request<User>('/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
 };
 
 // Companies
@@ -270,6 +276,7 @@ export interface AdminUser {
   id: string;
   email: string;
   role: 'admin' | 'aiuser' | 'user';
+  timezone: string;
   createdAt: string;
   updatedAt: string;
   companiesCount: number;
@@ -340,7 +347,7 @@ export const adminApi = {
   getUser: (id: string) => request<AdminUser>(`/admin/users/${id}`),
   createUser: (data: { email: string; password: string; role?: 'admin' | 'aiuser' | 'user' }) =>
     request<AdminUser>('/admin/users', { method: 'POST', body: JSON.stringify(data) }),
-  updateUser: (id: string, data: { email?: string; role?: 'admin' | 'aiuser' | 'user' }) =>
+  updateUser: (id: string, data: { email?: string; role?: 'admin' | 'aiuser' | 'user'; timezone?: string }) =>
     request<AdminUser>(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   setPassword: (id: string, password: string) =>
     request<{ message: string }>(`/admin/users/${id}/set-password`, {

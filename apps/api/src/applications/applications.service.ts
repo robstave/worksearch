@@ -234,6 +234,7 @@ export class ApplicationsService {
             fromState: null,
             toState: initialState as PrismaAppState,
             actorUserId: ownerId,
+            transitionedAt: appliedAt ?? new Date(),
           },
         },
       },

@@ -214,6 +214,11 @@ export const applicationsApi = {
       `/applications/${applicationId}/transitions/${transitionId}`,
       { method: 'PATCH', body: JSON.stringify(data) }
     ),
+  reset: (id: string) =>
+    request<{ applicationId: string; currentState: AppState; remainingTransitions: number; deletedTransitions: number }>(
+      `/applications/${id}/reset`,
+      { method: 'POST' }
+    ),
   delete: (id: string) => request<void>(`/applications/${id}`, { method: 'DELETE' }),
   getSankeyData: () => request<{
     nodes: Array<{ name: string }>;

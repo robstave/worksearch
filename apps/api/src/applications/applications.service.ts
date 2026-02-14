@@ -386,6 +386,53 @@ export class ApplicationsService {
     });
   }
 
+  async reset(id: string, ownerId: string) {
+    // Verify the application exists and belongs to this user
+    const app = await this.prisma.application.findFirst({
+      where: { id, ownerId },
+      include: {
+        transitions: {
+          orderBy: { transitionedAt: 'asc' },
+        },
+      },
+    });
+
+    if (!app) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (app.transitions.length === 0) {
+      throw new BadRequestException('No transitions to reset');
+    }
+
+    // Keep only the first transition, delete the rest
+    const firstTransition = app.transitions[0];
+    const transitionsToDelete = app.transitions.slice(1).map(t => t.id);
+
+    if (transitionsToDelete.length > 0) {
+      await this.prisma.stateTransition.deleteMany({
+        where: {
+          id: { in: transitionsToDelete },
+        },
+      });
+    }
+
+    // Update the application's current state to the first transition's toState
+    await this.prisma.application.update({
+      where: { id },
+      data: {
+        currentState: firstTransition.toState,
+      },
+    });
+
+    return {
+      applicationId: id,
+      currentState: firstTransition.toState,
+      remainingTransitions: 1,
+      deletedTransitions: transitionsToDelete.length,
+    };
+  }
+
   async remove(id: string, ownerId: string) {
     const app = await this.prisma.application.findFirst({
       where: { id, ownerId },

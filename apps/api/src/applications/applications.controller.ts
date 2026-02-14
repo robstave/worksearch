@@ -98,6 +98,12 @@ export class ApplicationsController {
     return this.applicationsService.updateTransition(transitionId, ownerId, dto);
   }
 
+  @Post(':id/reset')
+  async reset(@Req() req: Request, @Param('id') id: string) {
+    const ownerId = (req.session as any).userId;
+    return this.applicationsService.reset(id, ownerId);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Req() req: Request, @Param('id') id: string) {

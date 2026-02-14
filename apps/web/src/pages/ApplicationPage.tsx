@@ -165,6 +165,29 @@ export function ApplicationPage() {
     }
   };
 
+  const handleReset = async () => {
+    if (!id) return;
+    
+    const confirmed = window.confirm(
+      'Are you sure you want to reset this application?\n\nThis will:\n• Delete all transitions except the first one\n• Reset the state back to the first transition\'s state\n\nThis action cannot be undone.'
+    );
+    
+    if (!confirmed) return;
+    
+    setSaving(true);
+    setError('');
+    try {
+      await applicationsApi.reset(id);
+      // Reload application to show updated state
+      const updated = await applicationsApi.get(id);
+      setApplication(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reset application');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSave = async (initialState?: AppState, closeAfter = false) => {
     if (!jobTitle.trim()) {
       setError('Job title is required');
@@ -610,7 +633,20 @@ export function ApplicationPage() {
         {/* Transition History */}
         {!isNew && application && application.transitions.length > 0 && (
           <div className="mt-8 pt-6 border-t border-gray-700">
-            <h3 className="text-lg font-medium text-white mb-4 text-left">Transition History</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-white text-left">Transition History</h3>
+              {application.transitions.length > 1 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleReset}
+                  disabled={saving}
+                  className="text-orange-400 border-orange-400 hover:bg-orange-400/10"
+                >
+                  Reset to First State
+                </Button>
+              )}
+            </div>
             <div className="bg-gray-700 rounded-lg overflow-hidden">
               <table className="w-full">
                 <thead className="bg-gray-600">

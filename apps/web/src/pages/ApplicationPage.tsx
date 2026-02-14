@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { applicationsApi, companiesApi } from '../api';
-import type { ApplicationDetail, AppState, Company, WorkLocationType } from '../api';
+import { applicationsApi } from '../api';
+import type { ApplicationDetail, AppState, WorkLocationType } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
+import { CompanyTypeahead } from '@/components/CompanyTypeahead';
 
 const STATE_COLORS: Record<AppState, string> = {
   INTERESTED: 'bg-blue-500',
@@ -43,13 +44,13 @@ export function ApplicationPage() {
   const isNew = id === 'new';
 
   const [application, setApplication] = useState<ApplicationDetail | null>(null);
-  const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   // Form state
   const [companyId, setCompanyId] = useState('');
+  const [initialCompanyName, setInitialCompanyName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [jobReqUrl, setJobReqUrl] = useState('');
   const [workLocation, setWorkLocation] = useState<WorkLocationType | ''>('HYBRID');
@@ -74,9 +75,6 @@ export function ApplicationPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const companiesRes = await companiesApi.list();
-        setCompanies(companiesRes.items);
-
         if (!isNew && id) {
           const app = await applicationsApi.get(id);
           setApplication(app);
@@ -99,6 +97,9 @@ export function ApplicationPage() {
           const state = location.state as { companyId?: string; companyName?: string } | null;
           if (state?.companyId) {
             setCompanyId(state.companyId);
+            if (state?.companyName) {
+              setInitialCompanyName(state.companyName);
+            }
           }
         }
       } catch (err) {
@@ -367,26 +368,11 @@ export function ApplicationPage() {
               <label className="block text-left text-sm font-medium text-gray-300 mb-1">
                 Company <span className="text-red-400">*</span>
               </label>
-              <select
+              <CompanyTypeahead
                 value={companyId}
-                onChange={(e) => setCompanyId(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select a company</option>
-                {companies.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              {companies.length === 0 && (
-                <p className="mt-1 text-sm text-gray-400">
-                  No companies yet.{' '}
-                  <Link to="/companies" className="text-blue-400 hover:underline">
-                    Add one first
-                  </Link>
-                </p>
-              )}
+                onChange={setCompanyId}
+                initialCompanyName={initialCompanyName}
+              />
             </div>
           )}
 

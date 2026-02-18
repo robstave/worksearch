@@ -175,6 +175,8 @@ function Column({
 export function BoardPage() {
   const navigate = useNavigate();
   const [applications, setApplications] = useState<Application[]>([]);
+  const [columnTotals, setColumnTotals] = useState<Record<AppState, number> | null>(null);
+  const [columnHasMore, setColumnHasMore] = useState<Record<AppState, boolean> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState<Application | null>(null);
@@ -227,8 +229,26 @@ export function BoardPage() {
 
   const loadData = async () => {
     try {
-      const res = await applicationsApi.list();
-      setApplications(res.items);
+      const res = await applicationsApi.getBoardData({ limitPerState: 25 });
+      const merged = COLUMNS.flatMap((col) => res.columns[col.state]?.items ?? []);
+      const totals = COLUMNS.reduce(
+        (acc, col) => {
+          acc[col.state] = res.columns[col.state]?.total ?? 0;
+          return acc;
+        },
+        {} as Record<AppState, number>
+      );
+      const hasMore = COLUMNS.reduce(
+        (acc, col) => {
+          acc[col.state] = res.columns[col.state]?.hasMore ?? false;
+          return acc;
+        },
+        {} as Record<AppState, boolean>
+      );
+
+      setApplications(merged);
+      setColumnTotals(totals);
+      setColumnHasMore(hasMore);
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -301,24 +321,30 @@ export function BoardPage() {
         onDrop={stopAutoScroll}
       >
         {COLUMNS.map((col) => (
-          <Column
-            key={col.state}
-            label={col.label}
-            color={col.color}
-            apps={appsByState[col.state]}
-            draggingApp={dragging}
-            onDragStart={setDragging}
-            onDrop={() => {
-              if (dragging) {
-                handleDrop(dragging, col.state);
-              }
-            }}
-            onCardClick={(app) => navigate(`/applications/${app.id}`)}
-            onQuickMove={handleDrop}
-            isDragOver={dragOverState === col.state}
-            onDragOver={() => setDragOverState(col.state)}
-            onDragLeave={() => setDragOverState(null)}
-          />
+          <div key={col.state} className="flex-shrink-0 w-52">
+            <Column
+              label={col.label}
+              color={col.color}
+              apps={appsByState[col.state]}
+              draggingApp={dragging}
+              onDragStart={setDragging}
+              onDrop={() => {
+                if (dragging) {
+                  handleDrop(dragging, col.state);
+                }
+              }}
+              onCardClick={(app) => navigate(`/applications/${app.id}`)}
+              onQuickMove={handleDrop}
+              isDragOver={dragOverState === col.state}
+              onDragOver={() => setDragOverState(col.state)}
+              onDragLeave={() => setDragOverState(null)}
+            />
+            {columnHasMore?.[col.state] && (
+              <div className="mt-1.5 text-xs text-gray-400 text-center">
+                Showing 25 of {columnTotals?.[col.state] ?? 25}
+              </div>
+            )}
+          </div>
         ))}
       </div>
     </div>

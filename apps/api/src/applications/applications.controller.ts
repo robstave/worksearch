@@ -55,6 +55,18 @@ export class ApplicationsController {
     });
   }
 
+  @Get('board')
+  async getBoard(
+    @Req() req: Request,
+    @Query('limitPerState') limitPerState?: string,
+  ) {
+    const ownerId = (req.session as any).userId;
+    return this.applicationsService.getBoardData(
+      ownerId,
+      limitPerState ? parseInt(limitPerState, 10) : undefined,
+    );
+  }
+
   @Get(':id')
   async findOne(@Req() req: Request, @Param('id') id: string) {
     const ownerId = (req.session as any).userId;

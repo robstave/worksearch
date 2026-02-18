@@ -30,13 +30,14 @@ describe('ApplicationsService', () => {
     updatedAt: new Date('2025-01-01'),
     company: mockCompany,
     transitions: [],
-    events: [],
+    applicationEvents: [],
   };
 
   const mockPrismaService = {
     application: {
       findMany: jest.fn(),
       findFirst: jest.fn(),
+      count: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -76,6 +77,7 @@ describe('ApplicationsService', () => {
   describe('findAll', () => {
     it('should return all applications for a user', async () => {
       mockPrismaService.application.findMany.mockResolvedValue([mockApplication]);
+      mockPrismaService.application.count.mockResolvedValue(1);
 
       const result = await service.findAll('user-123');
 
@@ -86,6 +88,7 @@ describe('ApplicationsService', () => {
 
     it('should filter by state', async () => {
       mockPrismaService.application.findMany.mockResolvedValue([]);
+      mockPrismaService.application.count.mockResolvedValue(0);
 
       await service.findAll('user-123', { state: AppState.APPLIED });
 
@@ -100,6 +103,7 @@ describe('ApplicationsService', () => {
 
     it('should filter by search term', async () => {
       mockPrismaService.application.findMany.mockResolvedValue([]);
+      mockPrismaService.application.count.mockResolvedValue(0);
 
       await service.findAll('user-123', { search: 'Engineer' });
 
@@ -110,6 +114,26 @@ describe('ApplicationsService', () => {
               { jobTitle: { contains: 'Engineer', mode: 'insensitive' } },
             ]),
           }),
+        }),
+      );
+    });
+  });
+
+  describe('getBoardData', () => {
+    it('should return top applications per state with totals', async () => {
+      mockPrismaService.application.findMany.mockResolvedValue([]);
+      mockPrismaService.application.count.mockResolvedValue(0);
+
+      const result = await service.getBoardData('user-123', 25);
+
+      expect(result.limitPerState).toBe(25);
+      expect(result.columns.INTERESTED).toEqual(
+        expect.objectContaining({ total: 0, hasMore: false, items: [] }),
+      );
+      expect(mockPrismaService.application.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ ownerId: 'user-123', currentState: 'INTERESTED' }),
+          take: 25,
         }),
       );
     });

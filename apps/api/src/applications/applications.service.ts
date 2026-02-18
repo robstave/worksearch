@@ -30,9 +30,84 @@ const ALLOWED_TRANSITIONS: Record<AppState, AppState[]> = {
   [AppState.TRASH]: [], // terminal
 };
 
+const BOARD_STATES: AppState[] = [
+  AppState.INTERESTED,
+  AppState.APPLIED,
+  AppState.SCREENING,
+  AppState.INTERVIEW,
+  AppState.INTERVIEW_2,
+  AppState.INTERVIEW_3,
+  AppState.OFFER,
+  AppState.ACCEPTED,
+  AppState.DECLINED,
+  AppState.REJECTED,
+  AppState.GHOSTED,
+  AppState.TRASH,
+];
+
 @Injectable()
 export class ApplicationsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async getBoardData(ownerId: string, limitPerState = 25) {
+    const safeLimit = Math.max(1, Math.min(limitPerState, 100));
+
+    const stateResults = await Promise.all(
+      BOARD_STATES.map(async (state) => {
+        const where = { ownerId, currentState: state as PrismaAppState };
+        const [applications, total] = await Promise.all([
+          this.prisma.application.findMany({
+            where,
+            include: {
+              company: { select: { id: true, name: true } },
+              transitions: {
+                orderBy: { transitionedAt: 'desc' },
+                take: 1,
+              },
+            },
+            orderBy: { updatedAt: 'desc' },
+            take: safeLimit,
+          }),
+          this.prisma.application.count({ where }),
+        ]);
+
+        return {
+          state,
+          total,
+          items: applications.map((a) => ({
+            id: a.id,
+            company: { id: a.company.id, name: a.company.name },
+            jobTitle: a.jobTitle,
+            jobReqUrl: a.jobReqUrl,
+            currentState: a.currentState,
+            workLocation: a.workLocation,
+            hot: a.hot,
+            hotDate: a.hotDate?.toISOString() ?? null,
+            tags: a.tagsList,
+            lastTransitionAt: a.transitions[0]?.transitionedAt?.toISOString() ?? null,
+            appliedAt: a.appliedAt?.toISOString() ?? null,
+            createdAt: a.createdAt.toISOString(),
+            updatedAt: a.updatedAt.toISOString(),
+          })),
+        };
+      }),
+    );
+
+    return {
+      limitPerState: safeLimit,
+      columns: stateResults.reduce(
+        (acc, col) => {
+          acc[col.state] = {
+            total: col.total,
+            hasMore: col.total > col.items.length,
+            items: col.items,
+          };
+          return acc;
+        },
+        {} as Record<AppState, { total: number; hasMore: boolean; items: Array<any> }>,
+      ),
+    };
+  }
 
   async findAll(
     ownerId: string,

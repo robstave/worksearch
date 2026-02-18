@@ -234,6 +234,15 @@ export const applicationsApi = {
   }>(`/applications/analytics/timeline?days=${days}`),
   getSwimlaneData: () => request<SwimlaneApp[]>('/applications/analytics/swimlane'),
   cleanHot: () => request<{ cleaned: number }>('/applications/clean-hot', { method: 'POST' }),
+  getBoardData: (options?: { limitPerState?: number }) => {
+    const params = new URLSearchParams();
+    if (options?.limitPerState) params.set('limitPerState', options.limitPerState.toString());
+    const query = params.toString();
+    return request<{
+      limitPerState: number;
+      columns: Record<AppState, { total: number; hasMore: boolean; items: Application[] }>;
+    }>(`/applications/board${query ? `?${query}` : ''}`);
+  },
 };
 
 export interface SwimlaneApp {

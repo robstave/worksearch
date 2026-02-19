@@ -39,6 +39,8 @@ export function CompanyPage() {
   const [star, setStar] = useState(false);
   const [revisit, setRevisit] = useState(false);
   const [isNotesEditing, setIsNotesEditing] = useState(false);
+  const [showMoreActions, setShowMoreActions] = useState(false);
+  const [visitHistoryCollapsed, setVisitHistoryCollapsed] = useState(false);
 
   // Visit modal state
   const [showVisitModal, setShowVisitModal] = useState(false);
@@ -73,8 +75,8 @@ export function CompanyPage() {
     loadData();
   }, [id, isNew]);
 
-  const handleSave = async () => {
-    if (!name.trim()) return;
+  const saveCompany = async (): Promise<{ id: string; name: string } | null> => {
+    if (!name.trim()) return null;
 
     setSaving(true);
     setError('');
@@ -92,7 +94,8 @@ export function CompanyPage() {
           star,
           revisit,
         });
-        navigate(`/companies/${newCompany.id}`);
+        setIsNotesEditing(false);
+        return { id: newCompany.id, name: newCompany.name };
       } else if (id) {
         const updated = await companiesApi.update(id, {
           name: name.trim(),
@@ -102,11 +105,29 @@ export function CompanyPage() {
           revisit,
         });
         setCompany(prev => prev ? { ...prev, ...updated } : null);
+        setIsNotesEditing(false);
+        return { id: updated.id, name: updated.name };
       }
+      return null;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save company');
+      return null;
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSave = async () => {
+    const savedCompany = await saveCompany();
+    if (savedCompany && isNew) {
+      navigate(`/companies/${savedCompany.id}`);
+    }
+  };
+
+  const handleSaveAndAddApplication = async () => {
+    const savedCompany = await saveCompany();
+    if (savedCompany) {
+      navigate('/applications/new', { state: { companyId: savedCompany.id, companyName: savedCompany.name } });
     }
   };
 
@@ -224,21 +245,57 @@ export function CompanyPage() {
             </label>
           </div>
 
-          <div className="flex gap-3">
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {saving ? 'Saving...' : (isNew ? 'Create Company' : 'Save Changes')}
-            </Button>
-            {!isNew && (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
               <Button
-                onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700"
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-gray-700 hover:bg-gray-600"
               >
-                Delete Company
+                {saving ? 'Saving...' : 'Save'}
               </Button>
+              <Button
+                onClick={handleSaveAndAddApplication}
+                disabled={saving}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Save & Add Application
+              </Button>
+            </div>
+            {!isNew && (
+              <div className="relative">
+                <Button
+                  onClick={() => setShowMoreActions((prev) => !prev)}
+                  className="bg-gray-700 hover:bg-gray-600 px-3"
+                  aria-label="More actions"
+                >
+                  ⋯
+                </Button>
+                {showMoreActions && (
+                  <div className="absolute right-0 mt-2 w-44 rounded-md border border-gray-600 bg-gray-800 shadow-lg z-10 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowMoreActions(false);
+                        navigate('/events/new', { state: { companyId: company?.id, companyName: company?.name } });
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-gray-700"
+                    >
+                      📅 Add Event
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowMoreActions(false);
+                        void handleDelete();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-300 hover:bg-gray-700"
+                    >
+                      Delete Company
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -248,7 +305,7 @@ export function CompanyPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-white">Notes</h2>
             <button
-              onClick={() => setIsNotesEditing(!isNotesEditing)}
+              onClick={() => setIsNotesEditing((prev) => !prev)}
               className="text-sm text-blue-400 hover:underline"
             >
               {isNotesEditing ? 'Preview' : 'Edit'}
@@ -348,15 +405,24 @@ export function CompanyPage() {
         {!isNew && (
           <div className="bg-gray-800 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white">Visit History</h2>
-            <Button
-              onClick={() => setShowVisitModal(true)}
-              className="bg-purple-600 hover:bg-purple-700"
+            <button
+              type="button"
+              onClick={() => setVisitHistoryCollapsed((prev) => !prev)}
+              className="text-xl font-semibold text-white flex items-center gap-2"
             >
-              Log Visit
-            </Button>
+              <span>{visitHistoryCollapsed ? '▶' : '▼'}</span>
+              Visit History
+            </button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setShowVisitModal(true)}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                Log Visit
+              </Button>
+            </div>
           </div>
-          {visits.length === 0 ? (
+          {!visitHistoryCollapsed && (visits.length === 0 ? (
             <p className="text-gray-500 italic">No visits logged yet.</p>
           ) : (
             <div className="space-y-3">
@@ -378,7 +444,7 @@ export function CompanyPage() {
                 </div>
               ))}
             </div>
-          )}
+          ))}
           </div>
         )}
       </div>

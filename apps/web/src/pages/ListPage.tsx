@@ -66,6 +66,7 @@ export function ListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [applicationIdFilter, setApplicationIdFilter] = useState(searchParams.get('applicationId') || '');
   const [stateFilter, setStateFilter] = useState<AppState | ''>('');
   const [appliedDateFilter, setAppliedDateFilter] = useState<string>(searchParams.get('appliedDate') || ''); // YYYY-MM-DD format
   const [page, setPage] = useState(1);
@@ -80,6 +81,7 @@ export function ListPage() {
       const [res, statsRes, timelineRes] = await Promise.all([
         applicationsApi.list({
           search: search || undefined,
+          applicationId: applicationIdFilter || undefined,
           state: stateFilter || undefined,
           appliedDate: appliedDateFilter || undefined,
           sort: sortField,
@@ -104,11 +106,11 @@ export function ListPage() {
 
   useEffect(() => {
     setPage(1); // Reset to page 1 when filters or sort change
-  }, [search, stateFilter, appliedDateFilter, sortField, sortOrder]);
+  }, [search, applicationIdFilter, stateFilter, appliedDateFilter, sortField, sortOrder]);
 
   useEffect(() => {
     loadApplications();
-  }, [search, stateFilter, appliedDateFilter, sortField, sortOrder, page, timelineDays]);
+  }, [search, applicationIdFilter, stateFilter, appliedDateFilter, sortField, sortOrder, page, timelineDays]);
 
   if (loading) {
     return <LoadingScreen message="Loading applications..." />;
@@ -269,6 +271,18 @@ export function ListPage() {
           <button
             onClick={() => setAppliedDateFilter('')}
             className="text-blue-400 hover:text-blue-300 underline"
+          >
+            Clear filter
+          </button>
+        </div>
+      )}
+
+      {applicationIdFilter && (
+        <div className="mb-4 p-3 bg-orange-900/40 border border-orange-500 rounded text-orange-300 flex items-center justify-between">
+          <span>Showing a specific application from analytics follow-up.</span>
+          <button
+            onClick={() => setApplicationIdFilter('')}
+            className="text-orange-300 hover:text-orange-200 underline"
           >
             Clear filter
           </button>

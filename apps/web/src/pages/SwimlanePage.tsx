@@ -270,6 +270,12 @@ export function SwimlanePage() {
         >
           Flow
         </Link>
+        <Link
+          to="/analytics/distribution"
+          className="px-4 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+        >
+          Distribution
+        </Link>
         </div>
 
         {/* Time Range Filter */}

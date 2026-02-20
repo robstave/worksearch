@@ -170,6 +170,7 @@ export interface ApplicationDetail extends Application {
 export const applicationsApi = {
   list: (options?: {
     state?: AppState;
+    applicationId?: string;
     companyId?: string;
     search?: string;
     appliedDate?: string;
@@ -180,6 +181,7 @@ export const applicationsApi = {
   }) => {
     const params = new URLSearchParams();
     if (options?.state) params.set('state', options.state);
+    if (options?.applicationId) params.set('applicationId', options.applicationId);
     if (options?.companyId) params.set('companyId', options.companyId);
     if (options?.search) params.set('search', options.search);
     if (options?.appliedDate) params.set('appliedDate', options.appliedDate);
@@ -233,6 +235,18 @@ export const applicationsApi = {
     timeline: Array<{ date: string; count: number; companies: string[] }>;
   }>(`/applications/analytics/timeline?days=${days}`),
   getSwimlaneData: () => request<SwimlaneApp[]>('/applications/analytics/swimlane'),
+  getWorkLocationDistribution: () => request<{
+    items: Array<{ location: WorkLocationType | 'UNSPECIFIED'; count: number }>;
+    total: number;
+  }>('/applications/analytics/distribution/work-location'),
+  getTagDistribution: (limit = 25) => request<{
+    items: Array<{ tag: string; count: number }>;
+    totalTags: number;
+  }>(`/applications/analytics/distribution/tags?limit=${limit}`),
+  getHotInterviews: () => request<{
+    items: Array<{ id: string; company: string; jobTitle: string; appliedAt: string | null; hotDate: string | null }>;
+    total: number;
+  }>('/applications/analytics/distribution/hot-interviews'),
   cleanHot: () => request<{ cleaned: number }>('/applications/clean-hot', { method: 'POST' }),
   getBoardData: (options?: { limitPerState?: number }) => {
     const params = new URLSearchParams();

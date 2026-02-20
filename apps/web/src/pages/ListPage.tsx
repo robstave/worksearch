@@ -338,6 +338,7 @@ export function ListPage() {
                 <option value="jobTitle-asc">Title A-Z</option>
                 <option value="state-asc">State</option>
                 <option value="hot-desc">Hot 🔥</option>
+                <option value="hot-asc">Not Hot First</option>
               </select>
             </div>
             
@@ -381,7 +382,7 @@ export function ListPage() {
             <table className="w-full table-fixed">
               <thead className="bg-gray-700">
                 <tr>
-                  <th className="w-10 px-2 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">🔥</th>
+                  <SortHeader field="hot" className="w-10 px-2 text-center">🔥</SortHeader>
                   <SortHeader field="company" className="w-1/6">Company</SortHeader>
                   <SortHeader field="jobTitle" className="w-2/6">Job Title</SortHeader>
                   <SortHeader field="workLocation" className="w-12">Loc</SortHeader>

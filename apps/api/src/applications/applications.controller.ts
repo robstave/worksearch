@@ -32,6 +32,7 @@ export class ApplicationsController {
   async findAll(
     @Req() req: Request,
     @Query('state') state?: AppState,
+    @Query('applicationId') applicationId?: string,
     @Query('companyId') companyId?: string,
     @Query('tag') tag?: string,
     @Query('search') search?: string,
@@ -44,6 +45,7 @@ export class ApplicationsController {
     const ownerId = (req.session as any).userId;
     return this.applicationsService.findAll(ownerId, {
       state,
+      applicationId,
       companyId,
       tag,
       search,
@@ -145,6 +147,24 @@ export class ApplicationsController {
   async getSwimlane(@Req() req: Request) {
     const ownerId = (req.session as any).userId;
     return this.applicationsService.getSwimlaneData(ownerId);
+  }
+
+  @Get('analytics/distribution/work-location')
+  async getWorkLocationDistribution(@Req() req: Request) {
+    const ownerId = (req.session as any).userId;
+    return this.applicationsService.getWorkLocationDistribution(ownerId);
+  }
+
+  @Get('analytics/distribution/tags')
+  async getTagDistribution(@Req() req: Request, @Query('limit') limit?: string) {
+    const ownerId = (req.session as any).userId;
+    return this.applicationsService.getTagDistribution(ownerId, limit ? parseInt(limit, 10) : undefined);
+  }
+
+  @Get('analytics/distribution/hot-interviews')
+  async getHotInterviews(@Req() req: Request) {
+    const ownerId = (req.session as any).userId;
+    return this.applicationsService.getHotInterviews(ownerId);
   }
 
   @Post('clean-hot')

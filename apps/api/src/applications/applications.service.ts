@@ -12,7 +12,13 @@ import {
   MoveApplicationDto,
   UpdateTransitionDto,
   AppState,
+  WorkLocationType,
 } from './dto/application.dto';
+import {
+  HotInterviewListDto,
+  TagDistributionDto,
+  WorkLocationDistributionDto,
+} from './dto/distribution.dto';
 
 // State machine: allowed transitions
 const ALLOWED_TRANSITIONS: Record<AppState, AppState[]> = {
@@ -113,6 +119,7 @@ export class ApplicationsService {
     ownerId: string,
     options: {
       state?: AppState;
+      applicationId?: string;
       companyId?: string;
       tag?: string;
       search?: string;
@@ -123,12 +130,16 @@ export class ApplicationsService {
       limit?: number;
     } = {},
   ) {
-    const { state, companyId, tag, search, appliedDate, sort = 'updatedAt', order = 'desc', page = 1, limit = 20 } = options;
+    const { state, applicationId, companyId, tag, search, appliedDate, sort = 'updatedAt', order = 'desc', page = 1, limit = 20 } = options;
 
     const where: any = { ownerId };
 
     if (state) {
       where.currentState = state;
+    }
+
+    if (applicationId) {
+      where.id = applicationId;
     }
 
     if (companyId) {
@@ -735,5 +746,81 @@ export class ApplicationsService {
         date: t.transitionedAt.toISOString(),
       })),
     }));
+  }
+
+  async getWorkLocationDistribution(ownerId: string): Promise<WorkLocationDistributionDto> {
+    const grouped = await this.prisma.application.groupBy({
+      by: ['workLocation'],
+      where: { ownerId },
+      _count: { _all: true },
+    });
+
+    const items = grouped
+      .map((row) => ({
+        location: (row.workLocation ?? 'UNSPECIFIED') as WorkLocationType | 'UNSPECIFIED',
+        count: row._count._all,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const total = items.reduce((sum, item) => sum + item.count, 0);
+
+    return { items, total };
+  }
+
+  async getTagDistribution(ownerId: string, limit = 25): Promise<TagDistributionDto> {
+    const safeLimit = Math.max(1, Math.min(limit, 100));
+
+    const applications = await this.prisma.application.findMany({
+      where: { ownerId },
+      select: { tagsList: true },
+    });
+
+    const counts = new Map<string, number>();
+    for (const app of applications) {
+      for (const rawTag of app.tagsList) {
+        const tag = rawTag.trim();
+        if (!tag) continue;
+        counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      }
+    }
+
+    const items = Array.from(counts.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag))
+      .slice(0, safeLimit);
+
+    return {
+      items,
+      totalTags: counts.size,
+    };
+  }
+
+  async getHotInterviews(ownerId: string): Promise<HotInterviewListDto> {
+    const items = await this.prisma.application.findMany({
+      where: {
+        ownerId,
+        hot: true,
+        currentState: { in: ['INTERVIEW', 'INTERVIEW_2', 'INTERVIEW_3'] },
+      },
+      select: {
+        id: true,
+        jobTitle: true,
+        appliedAt: true,
+        hotDate: true,
+        company: { select: { name: true } },
+      },
+      orderBy: [{ hotDate: 'desc' }, { updatedAt: 'desc' }],
+    });
+
+    return {
+      items: items.map((item) => ({
+        id: item.id,
+        company: item.company.name,
+        jobTitle: item.jobTitle,
+        appliedAt: item.appliedAt?.toISOString() ?? null,
+        hotDate: item.hotDate?.toISOString() ?? null,
+      })),
+      total: items.length,
+    };
   }
 }

@@ -247,16 +247,28 @@ export function ApplicationPage() {
   };
 
   const handleMove = async (toState: AppState) => {
-    if (!id || isNew) return;
+    if (!id || isNew || !application) return;
 
     setSaving(true);
     try {
-      // For GHOSTED transitions, default to appliedAt + 30 days
       let transitionedAt: string | undefined;
-      if (toState === 'GHOSTED' && application?.appliedAt) {
+
+      // For GHOSTED transitions, default to appliedAt + 30 days
+      if (toState === 'GHOSTED' && application.appliedAt) {
         const ghostDate = new Date(application.appliedAt);
         ghostDate.setDate(ghostDate.getDate() + 30);
         transitionedAt = ghostDate.toISOString();
+      }
+
+      // For REJECTED transitions on older backfilled records, default to app date
+      if (toState === 'REJECTED') {
+        const createdAt = new Date(application.createdAt);
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+        if (createdAt < threeMonthsAgo) {
+          transitionedAt = application.appliedAt ?? application.createdAt;
+        }
       }
 
       await applicationsApi.move(id, toState, { transitionedAt });

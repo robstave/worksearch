@@ -372,7 +372,13 @@ export function ListPage() {
                       >
                         <FireIcon active={app.hot} />
                       </button>
-                      <span className="text-white font-medium truncate">{app.company.name}</span>
+                      <Link
+                        to={`/companies/${app.company.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-white font-medium truncate hover:text-blue-400 transition-colors"
+                      >
+                        {app.company.name}
+                      </Link>
                       <WorkLocationBadge location={app.workLocation} />
                     </div>
                     <p className="text-gray-300 text-sm mt-1 truncate">{app.jobTitle}</p>
@@ -421,7 +427,15 @@ export function ListPage() {
                         <FireIcon active={app.hot} />
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-left text-white font-medium truncate">{app.company.name}</td>
+                    <td className="px-4 py-3 text-left text-white font-medium truncate">
+                      <Link
+                        to={`/companies/${app.company.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="hover:text-blue-400 transition-colors"
+                      >
+                        {app.company.name}
+                      </Link>
+                    </td>
                     <td className="px-4 py-3 text-left text-gray-300 truncate">{app.jobTitle}</td>
                     <td className="px-4 py-3 text-left">
                       <WorkLocationBadge location={app.workLocation} />

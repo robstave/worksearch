@@ -10,14 +10,18 @@ API: REST (/api), session-cookie auth
 ### Layout
 
 - Top nav with tabs:
-  - Dashboard
-  - Applications (Board)
-  - Applications (List)
-  - Companies
-- Right side user menu:
-  - user email
-  - user icon/avatar (optional)
-  - logout
+  - Applications (Board) — `/applications/board`
+  - Applications (List) — `/applications/list`
+  - Companies — `/companies`
+  - Job Boards — `/job-boards`
+  - Calendar — `/calendar`
+  - Analytics (Sankey / Heatmap / Swimlane)
+- Right side avatar dropdown menu:
+  - Profile
+  - Settings
+  - Display Mode (dark/light toggle)
+  - Admin (admin role only)
+  - Logout
 
 ### Theme
 
@@ -32,19 +36,26 @@ API: REST (/api), session-cookie auth
 - Empty state components
 - Confirm dialogs for destructive actions (delete, trash)
 
-### Navigation / Routing (suggested)
+### Navigation / Routing
 
 - /login
-- /dashboard
 - /applications/board
 - /applications/list
 - /applications/:id
 - /companies
 - /companies/:id
+- /job-boards
+- /job-boards/:id
+- /calendar
+- /events/:id
+- /analytics/sankey
+- /analytics/heatmap
+- /analytics/timeline
+- /admin/users  (admin only)
+- /settings
+- /profile
 
-Default route after login: `/applications/board`
-
-Note: current implementation defaults to `/applications/list`.
+Default route after login: `/applications/list`
 
 ## 2) Authentication UX
 

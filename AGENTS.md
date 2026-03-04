@@ -1,7 +1,7 @@
 # WorkSearch - AI Agent Context
 
 > This file helps AI assistants understand the project state and continue work.
-> Last updated: 2026-02-05
+> Last updated: 2026-02-19
 
 ## Project Overview
 
@@ -56,20 +56,26 @@ apps/
       Layout.tsx # Protected nav layout
       pages/
         LoginPage.tsx
-        BoardPage.tsx    # Kanban board with drag-drop
-        ListPage.tsx     # Table view with filters
+        BoardPage.tsx        # Kanban board with drag-drop
+        ListPage.tsx         # Table view with filters
         CompaniesPage.tsx    # Companies list with star/revisit flags
         CompanyPage.tsx      # Company detail/edit with notes + visits
         ApplicationPage.tsx  # Application detail/edit
+        CalendarPage.tsx     # Monthly calendar view for events
+        EventPage.tsx        # Event detail/edit (create/update/delete)
         JobBoardsPage.tsx    # Job boards list with search
         JobBoardPage.tsx     # Job board detail/edit
         AdminUsersPage.tsx   # Admin user management
-        SankeyPage.tsx       # State transition analytics
+        SankeyPage.tsx       # State transition Sankey analytics
+        HeatmapPage.tsx      # GitHub-style activity heatmap
+        SwimlanePage.tsx     # Application timeline swimlane view
         SettingsPage.tsx     # User settings (placeholder)
         ProfilePage.tsx      # User profile (placeholder)
       theme.tsx      # Theme context with dark mode support
       components/
         ui/          # Reusable UI components (Button, Spinner, etc.)
+      lib/
+        stateColors.ts  # State color/label constants shared across views
 docs/
   specs/         # Original requirements
 ```
@@ -104,13 +110,15 @@ docs/
 | Hot Applications | ✅ | ✅ | Fire icon toggle, auto-dated, "Check Hot" cleans stale (>1 month) |
 | Admin User CRUD | ✅ | ✅ | Full admin panel at /admin/users |
 | Sankey Analytics | ✅ | ✅ | State transition flow visualization |
+| Heatmap Analytics | ✅ | ✅ | GitHub-style activity heatmap at /analytics/heatmap |
+| Swimlane / Timeline | ✅ | ✅ | Per-application timeline bars at /analytics/timeline |
+| Calendar / Events | ✅ | ✅ | Monthly calendar view + full Events CRUD (/calendar, /events/:id) |
 | Responsive Design | ✅ | ✅ | Card layouts for mobile/tablet, tables for desktop (1024px breakpoint) |
 
 ### 🔲 Not Yet Implemented
 
 | Feature | Priority | Notes |
 |---------|----------|-------|
-| Events/Notes | Medium | Timestamped notes on applications |
 | Light Mode | Low | Infrastructure exists, needs styling |
 | Settings Page | Low | Placeholder exists |
 | Profile Page | Low | Basic display only |
@@ -174,6 +182,12 @@ GET    /api/job-boards/:id
 PATCH  /api/job-boards/:id { name?, link?, notesMd? }
 DELETE /api/job-boards/:id
 
+GET    /api/events        ?from=&to=&companyId=&applicationId=&type=
+POST   /api/events        { title, eventType?, scheduledAt?, notesMd?, companyId?, applicationId? }
+GET    /api/events/:id
+PATCH  /api/events/:id    { title?, eventType?, scheduledAt?, notesMd?, companyId?, applicationId? }
+DELETE /api/events/:id
+
 # Admin (requires admin role)
 GET    /api/admin/users
 POST   /api/admin/users    { email, password, role? }
@@ -235,3 +249,5 @@ For detailed requirements, see:
 - [docs/specs/010-domain-model.md](docs/specs/010-domain-model.md) - Data model
 - [docs/specs/020-api-contract.md](docs/specs/020-api-contract.md) - API spec
 - [docs/specs/030-ui-spec.md](docs/specs/030-ui-spec.md) - UI requirements
+- [docs/specs/040-deployment.md](docs/specs/040-deployment.md) - Deployment notes
+- [docs/specs/050-future-features.md](docs/specs/050-future-features.md) - Backlog / future work

@@ -125,12 +125,14 @@ Include a "confidence" field for each item: "high", "medium", or "low".
 ## Other Future Features (Backlog)
 
 ### Events/Notes on Applications
-- Timestamped notes/events attached to applications
-- Track phone screens, interviews, follow-ups
+- ~~Timestamped notes/events attached to applications~~
+- ~~Track phone screens, interviews, follow-ups~~
+- **Implemented** — see Calendar (`/calendar`) and Events (`/events/:id`)
 
 ### State Transition History
-- Show full history of state changes in application detail view
-- Display who made the transition and when
+- ~~Show full history of state changes in application detail view~~
+- ~~Display who made the transition and when~~
+- **Implemented** — inline editing of transition dates and notes on ApplicationPage
 
 ### Inline Company Creation
 - "Add new company" option in application creation modal
@@ -154,6 +156,18 @@ Include a "confidence" field for each item: "high", "medium", or "low".
 ---
 
 ## Status: ✅ Implemented
+
+### Activity Heatmap (`/analytics/heatmap`)
+
+GitHub-style contribution heatmap showing application activity over the past year. Each cell represents a day; color intensity reflects the number of applications. Hover tooltip shows date, count, and company names.
+
+### Application Swimlane / Timeline (`/analytics/timeline`)
+
+Horizontal Gantt-style chart showing each application as a row with colored segments representing time spent in each state. Terminal states (Rejected, Ghosted, Accepted, etc.) are marked with an icon. Filter and scroll to explore the full history.
+
+### Calendar / Events (`/calendar`, `/events/:id`)
+
+Full monthly calendar view showing scheduled events. Events have typed categories (Interview, Screening, Tech Screening, Call, Follow-up, Deadline, Todo, Meetup, Other) with color coding. Full CRUD for events, linkable to a Company or Application.
 
 ### User Administration (Admin Panel)
 

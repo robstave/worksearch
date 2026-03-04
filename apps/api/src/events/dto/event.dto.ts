@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, MinLength, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsBoolean, MinLength, IsDateString } from 'class-validator';
 
 export enum CalendarEventType {
   SCREENING = 'SCREENING',
@@ -36,6 +36,18 @@ export class CreateEventDto {
   @IsOptional()
   @IsString()
   applicationId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  confirmed?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  createFollowUp?: boolean;
+
+  @IsOptional()
+  @IsDateString()
+  followUpAt?: string;
 }
 
 export class UpdateEventDto {
@@ -63,4 +75,16 @@ export class UpdateEventDto {
   @IsOptional()
   @IsString()
   applicationId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  confirmed?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  createFollowUp?: boolean;
+
+  @IsOptional()
+  @IsDateString()
+  followUpAt?: string;
 }

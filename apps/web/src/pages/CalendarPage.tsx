@@ -211,6 +211,9 @@ export function CalendarPage() {
                         {cfg.label}
                       </span>
                       <span className="text-white font-medium truncate">{event.title}</span>
+                      {event.confirmed && (
+                        <span className="flex-shrink-0 text-green-400 text-xs font-bold" title="Confirmed">✓</span>
+                      )}
                     </div>
                     {(event.company || event.application) && (
                       <div className="text-xs text-gray-400 mt-0.5 truncate">

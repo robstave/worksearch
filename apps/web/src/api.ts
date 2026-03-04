@@ -331,6 +331,7 @@ export interface CalendarEvent {
   type: CalendarEventType;
   scheduledAt: string;
   notesMd: string;
+  confirmed: boolean;
   companyId: string | null;
   applicationId: string | null;
   company: { id: string; name: string } | null;
@@ -356,6 +357,9 @@ export const eventsApi = {
     type?: CalendarEventType;
     scheduledAt: string;
     notesMd?: string;
+    confirmed?: boolean;
+    createFollowUp?: boolean;
+    followUpAt?: string;
     companyId?: string;
     applicationId?: string;
   }) => request<CalendarEvent>('/events', { method: 'POST', body: JSON.stringify(data) }),
@@ -364,6 +368,9 @@ export const eventsApi = {
     type?: CalendarEventType;
     scheduledAt?: string;
     notesMd?: string;
+    confirmed?: boolean;
+    createFollowUp?: boolean;
+    followUpAt?: string;
     companyId?: string;
     applicationId?: string;
   }) => request<CalendarEvent>(`/events/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),

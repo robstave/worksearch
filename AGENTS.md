@@ -113,6 +113,7 @@ docs/
 | Heatmap Analytics | ✅ | ✅ | GitHub-style activity heatmap at /analytics/heatmap |
 | Swimlane / Timeline | ✅ | ✅ | Per-application timeline bars at /analytics/timeline |
 | Calendar / Events | ✅ | ✅ | Monthly calendar view + full Events CRUD (/calendar, /events/:id) |
+| Event Confirmed/Follow-up | ✅ | ✅ | Confirmed checkbox + auto-create FOLLOWUP event on interactable event types |
 | Responsive Design | ✅ | ✅ | Card layouts for mobile/tablet, tables for desktop (1024px breakpoint) |
 
 ### 🔲 Not Yet Implemented
@@ -128,6 +129,7 @@ docs/
 | E2E Tests | Medium | |
 | Self-Service Password | Medium | User changes own password |
 | Company AI Autofill | Low | LLM-powered company info lookup |
+| Telegram Reminders | Low | Bot integration for interview/follow-up reminders |
 
 ## Key Technical Decisions
 

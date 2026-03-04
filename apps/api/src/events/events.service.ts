@@ -68,6 +68,7 @@ export class EventsService {
         application: e.application
           ? { id: e.application.id, jobTitle: e.application.jobTitle }
           : null,
+        confirmed: e.confirmed,
         createdAt: e.createdAt.toISOString(),
         updatedAt: e.updatedAt.toISOString(),
       })),
@@ -109,6 +110,7 @@ export class EventsService {
       application: event.application
         ? { id: event.application.id, jobTitle: event.application.jobTitle }
         : null,
+      confirmed: event.confirmed,
       createdAt: event.createdAt.toISOString(),
       updatedAt: event.updatedAt.toISOString(),
     };
@@ -146,6 +148,7 @@ export class EventsService {
         type: (dto.type as any) || 'NONE',
         scheduledAt: new Date(dto.scheduledAt),
         notesMd: dto.notesMd || '',
+        confirmed: dto.confirmed ?? false,
         companyId: companyId,
         applicationId: dto.applicationId || null,
       },
@@ -160,6 +163,25 @@ export class EventsService {
         },
       },
     });
+
+    // Create follow-up event if requested
+    if (dto.createFollowUp) {
+      const followUpDate = dto.followUpAt
+        ? new Date(dto.followUpAt)
+        : new Date(new Date(dto.scheduledAt).getTime() + 7 * 24 * 60 * 60 * 1000);
+      await this.prisma.event.create({
+        data: {
+          ownerId,
+          title: `Follow-up: ${dto.title}`,
+          type: 'FOLLOWUP',
+          scheduledAt: followUpDate,
+          notesMd: '',
+          confirmed: false,
+          companyId: companyId,
+          applicationId: dto.applicationId || null,
+        },
+      });
+    }
 
     return {
       id: event.id,
@@ -177,6 +199,7 @@ export class EventsService {
       application: event.application
         ? { id: event.application.id, jobTitle: event.application.jobTitle }
         : null,
+      confirmed: event.confirmed,
       createdAt: event.createdAt.toISOString(),
       updatedAt: event.updatedAt.toISOString(),
     };
@@ -198,6 +221,7 @@ export class EventsService {
     if (dto.notesMd !== undefined) data.notesMd = dto.notesMd;
     if (dto.companyId !== undefined) data.companyId = dto.companyId || null;
     if (dto.applicationId !== undefined) data.applicationId = dto.applicationId || null;
+    if (dto.confirmed !== undefined) data.confirmed = dto.confirmed;
 
     const event = await this.prisma.event.update({
       where: { id },
@@ -213,6 +237,25 @@ export class EventsService {
         },
       },
     });
+
+    // Create follow-up event if requested
+    if (dto.createFollowUp) {
+      const followUpDate = dto.followUpAt
+        ? new Date(dto.followUpAt)
+        : new Date(event.scheduledAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+      await this.prisma.event.create({
+        data: {
+          ownerId,
+          title: `Follow-up: ${event.title}`,
+          type: 'FOLLOWUP',
+          scheduledAt: followUpDate,
+          notesMd: '',
+          confirmed: false,
+          companyId: event.companyId,
+          applicationId: event.applicationId,
+        },
+      });
+    }
 
     return {
       id: event.id,
@@ -230,6 +273,7 @@ export class EventsService {
       application: event.application
         ? { id: event.application.id, jobTitle: event.application.jobTitle }
         : null,
+      confirmed: event.confirmed,
       createdAt: event.createdAt.toISOString(),
       updatedAt: event.updatedAt.toISOString(),
     };

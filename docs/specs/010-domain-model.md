@@ -147,21 +147,27 @@ Rules:
 - Mapping is unique per pair
 - Tag application/removal is idempotent
 
-### ApplicationEvent (important dates)
+### Event (calendar events)
 
-Represents an upcoming or past date tied to an application. Used by Dashboard.
+Represents a scheduled or past event, optionally tied to a Company or Application.
 
 Fields:
 
-- id
-- applicationId
-- type: INTERVIEW | FOLLOWUP | CALL | DEADLINE | OTHER
-- at (timestamp)
-- note (optional)
+- id (cuid)
+- ownerId (User reference)
+- title
+- type: `SCREENING` | `INTERVIEW` | `TECH_SCREENING` | `TODO` | `MEETUP` | `FOLLOWUP` | `CALL` | `DEADLINE` | `NONE` | `OTHER`
+- scheduledAt (timestamp)
+- notesMd (markdown text)
+- confirmed (boolean, default false) — whether the event has been confirmed/replied to (applicable to `SCREENING`, `INTERVIEW`, `TECH_SCREENING`, `CALL`)
+- companyId? (optional Company reference)
+- applicationId? (optional Application reference)
+- createdAt, updatedAt
 
 Rules:
 
-- Events are editable/deletable (unlike transitions)
+- Events are editable/deletable (unlike StateTransitions)
+- Creating an event with a confirmable type and the "schedule follow-up" option checked automatically creates a linked `FOLLOWUP` event 1 week later
 
 ### JobBoard
 

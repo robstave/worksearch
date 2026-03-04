@@ -232,6 +232,7 @@ model Event {
   type            EventType  @default(NONE)
   scheduledAt     DateTime
   notesMd         String     @default("")
+  confirmed       Boolean    @default(false)
 
   companyId       String?
   applicationId   String?

@@ -18,6 +18,9 @@ const EVENT_TYPE_OPTIONS: { value: CalendarEventType; label: string; icon: strin
   { value: 'OTHER', label: 'Other', icon: '📌' },
 ];
 
+// Event types that support Confirmed + Follow-up checkboxes
+const REPLY_EVENT_TYPES: CalendarEventType[] = ['SCREENING', 'INTERVIEW', 'TECH_SCREENING', 'CALL'];
+
 // Helper to format date for datetime-local input (preserves local timezone)
 const formatDateTimeLocal = (date: Date): string => {
   const year = date.getFullYear();
@@ -49,6 +52,9 @@ export function EventPage() {
   const [isNotesEditing, setIsNotesEditing] = useState(false);
   const [companyId, setCompanyId] = useState('');
   const [applicationId, setApplicationId] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
+  const [createFollowUp, setCreateFollowUp] = useState(false);
+  const [followUpAt, setFollowUpAt] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -70,6 +76,7 @@ export function EventPage() {
           setNotesMd(eventData.notesMd || '');
           setCompanyId(eventData.companyId || '');
           setApplicationId(eventData.applicationId || '');
+          setConfirmed(eventData.confirmed ?? false);
         } else if (isNew) {
           // Check if pre-filled from navigation state
           const state = location.state as {
@@ -128,24 +135,24 @@ export function EventPage() {
     setError('');
 
     try {
+      const isReplyType = REPLY_EVENT_TYPES.includes(eventType);
+      const payload = {
+        title: title.trim(),
+        type: eventType,
+        scheduledAt: new Date(scheduledAt).toISOString(),
+        notesMd: notesMd.trim() || undefined,
+        companyId: companyId || undefined,
+        applicationId: applicationId || undefined,
+        ...(isReplyType && { confirmed }),
+        ...(isReplyType && createFollowUp && {
+          createFollowUp: true,
+          followUpAt: followUpAt ? new Date(followUpAt).toISOString() : undefined,
+        }),
+      };
       if (isNew) {
-        await eventsApi.create({
-          title: title.trim(),
-          type: eventType,
-          scheduledAt: new Date(scheduledAt).toISOString(),
-          notesMd: notesMd.trim() || undefined,
-          companyId: companyId || undefined,
-          applicationId: applicationId || undefined,
-        });
+        await eventsApi.create(payload);
       } else if (id) {
-        await eventsApi.update(id, {
-          title: title.trim(),
-          type: eventType,
-          scheduledAt: new Date(scheduledAt).toISOString(),
-          notesMd: notesMd.trim(),
-          companyId: companyId || undefined,
-          applicationId: applicationId || undefined,
-        });
+        await eventsApi.update(id, payload);
       }
       navigate('/calendar');
     } catch (err) {
@@ -244,6 +251,55 @@ export function EventPage() {
               />
             </div>
           </div>
+
+          {/* Confirmed + Follow-up (only for reply-type events) */}
+          {REPLY_EVENT_TYPES.includes(eventType) && (
+            <div className="p-4 bg-gray-700/50 rounded-lg border border-gray-600 space-y-3">
+              <div className="flex items-center gap-3">
+                <input
+                  id="confirmed"
+                  type="checkbox"
+                  checked={confirmed}
+                  onChange={(e) => setConfirmed(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-500 bg-gray-700 text-green-500 focus:ring-green-500"
+                />
+                <label htmlFor="confirmed" className="text-sm font-medium text-gray-200 cursor-pointer select-none">
+                  ✓ Confirmed — I have replied / acknowledged this event
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  id="createFollowUp"
+                  type="checkbox"
+                  checked={createFollowUp}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setCreateFollowUp(checked);
+                    if (checked && !followUpAt && scheduledAt) {
+                      const d = new Date(scheduledAt);
+                      d.setDate(d.getDate() + 7);
+                      setFollowUpAt(formatDateTimeLocal(d));
+                    }
+                  }}
+                  className="w-4 h-4 rounded border-gray-500 bg-gray-700 text-blue-500 focus:ring-blue-500"
+                />
+                <label htmlFor="createFollowUp" className="text-sm font-medium text-gray-200 cursor-pointer select-none">
+                  📞 Schedule follow-up event (thank-you / check-in)
+                </label>
+              </div>
+              {createFollowUp && (
+                <div className="ml-7">
+                  <label className="block text-xs text-gray-400 mb-1">Follow-up date &amp; time</label>
+                  <input
+                    type="datetime-local"
+                    value={followUpAt}
+                    onChange={(e) => setFollowUpAt(e.target.value)}
+                    className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Company Selector */}
           <div>

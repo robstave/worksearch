@@ -134,6 +134,12 @@ Include a "confidence" field for each item: "high", "medium", or "low".
 - ~~Display who made the transition and when~~
 - **Implemented** — inline editing of transition dates and notes on ApplicationPage
 
+### Event Confirmed + Follow-up — ✅ Implemented
+
+- A `confirmed` boolean on calendar events for types that warrant a reply: `SCREENING`, `INTERVIEW`, `TECH_SCREENING`, `CALL`
+- On those event types, a "Schedule follow-up" checkbox is shown in the event form; when checked, a `FOLLOWUP` event is automatically created 1 week after the original event (the follow-up date is adjustable before saving)
+- Confirmed status is shown as a visual indicator (✓) in the calendar upcoming events list next to the event title
+
 ### Inline Company Creation
 - "Add new company" option in application creation modal
 - Avoid context switching to Companies page
@@ -220,3 +226,30 @@ All endpoints require `admin` role. Returns 403 Forbidden for non-admins.
 - Confirmation dialogs for destructive actions
 - Password requirements: minimum 6 characters
 - Admin-only nav link (red accent color)
+---
+
+## Telegram Integration (Future)
+
+### Goal
+
+Send proactive reminders via a Telegram bot to alert the user about:
+
+- **Unconfirmed upcoming interviews/screenings** — e.g., 24 h before: _"You haven't confirmed your 2 pm interview with Acme tomorrow"_
+- **Pending follow-ups** — e.g., _"You have a follow-up due for your Google interview from last week"_
+- **Application state staleness** — e.g., _"No activity on 5 applications in 30+ days"_
+
+### Implementation Approach
+
+- Bot token stored in user settings or environment variable (`TELEGRAM_BOT_TOKEN`)
+- Telegram chat ID configured per user (stored in User record)
+- Cron job in the API using NestJS `@Cron` decorator to fire daily reminder checks
+- Per-event opt-out toggle (future enhancement)
+- Configurable lead time: default 24 h before event for confirmation reminders, day-of for follow-up reminders
+
+### Dependencies
+
+- `node-telegram-bot-api` or `telegraf` npm package
+
+### Priority
+
+**Low** — infrastructure groundwork exists (NestJS scheduler is already available via `@nestjs/schedule`).

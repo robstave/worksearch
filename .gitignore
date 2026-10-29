@@ -47,6 +47,8 @@ coverage/
 # Misc
 *.bak
 *.tmp
+cheatcodes.md
+
 
 # Database backups
 backup-*.sql

@@ -8,11 +8,11 @@ export enum RoleDto {
 
 export class CreateUserDto {
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 
   @IsEnum(RoleDto)
   @IsOptional()
@@ -36,14 +36,14 @@ export class UpdateUserDto {
 export class SetPasswordDto {
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 }
 
 export class UserResponseDto {
-  id: string;
-  email: string;
-  role: string;
-  timezone: string;
-  createdAt: string;
-  updatedAt: string;
+  id!: string;
+  email!: string;
+  role!: string;
+  timezone!: string;
+  createdAt!: string;
+  updatedAt!: string;
 }

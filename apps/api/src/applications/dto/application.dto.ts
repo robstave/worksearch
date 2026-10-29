@@ -24,11 +24,11 @@ export enum WorkLocationType {
 
 export class CreateApplicationDto {
   @IsString()
-  companyId: string;
+  companyId!: string;
 
   @IsString()
   @MinLength(1)
-  jobTitle: string;
+  jobTitle!: string;
 
   @IsOptional()
   @IsString()
@@ -101,7 +101,7 @@ export class UpdateApplicationDto {
 
 export class MoveApplicationDto {
   @IsEnum(AppState)
-  toState: AppState;
+  toState!: AppState;
 
   @IsOptional()
   @IsString()

@@ -5,6 +5,12 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const isProduction = process.env.NODE_ENV === 'production';
+  const appSecret = process.env.APP_SECRET;
+
+  if (isProduction && !appSecret) {
+    throw new Error('APP_SECRET must be set in production');
+  }
   
   app.setGlobalPrefix('api');
   
@@ -15,12 +21,13 @@ async function bootstrap() {
 
   app.use(
     session({
-      secret: process.env.APP_SECRET || 'dev-secret-change-me',
+      secret: appSecret || 'dev-secret-change-me',
       resave: false,
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        secure: isProduction,
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
       },
     }),

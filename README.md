@@ -4,7 +4,7 @@
 
 **Your job hunt, organized.**
 
-A modern, self-hosted job application tracker with a Kanban board, powerful filtering, and full control over your data.
+A self-hosted job application tracker with Kanban and list views, filtering, analytics, and full control over your data.
 
 [![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat&logo=nestjs&logoColor=white)](https://nestjs.com/)
 [![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
@@ -18,29 +18,15 @@ A modern, self-hosted job application tracker with a Kanban board, powerful filt
 
 ## ✨ Features
 
-🎯 **Track Every Application**  
-Never lose track of where you applied. Log jobs as "Interested" and move them through your pipeline.
-
-📋 **Kanban Board & List Views**  
-Drag-and-drop applications between states, or use the powerful list view with search and filters.
-
-🏢 **Company Management**  
-Keep notes on companies, track how many roles you've applied to at each one.
-
-📌 **Job Boards**  
-Bookmark your favorite job boards with notes—no more forgetting that niche site.
-
-🏷️ **Tags & Work Location**  
-Organize with custom tags. Filter by Remote, Hybrid, Onsite, or Contract.
-
-📊 **Analytics Dashboard**  
-Visualize your job search with a Sankey diagram showing flow from applications to outcomes.
-
-👥 **Multi-User Ready**  
-Each user has isolated data. Admin panel for user management.
-
-🔒 **Self-Hosted & Private**  
-Your job search data stays on your server. No third-party tracking.
+- Track applications from INTERESTED through outcome states
+- Use Kanban and list views with search, filters, and sorting
+- Manage companies with notes, starred/revisit flags, and visit history
+- Save job boards with links and notes
+- Tag roles and filter by work location (Remote, Hybrid, Onsite, Contract)
+- Review analytics (Sankey flow, heatmap, and timeline/swimlane views)
+- Manage events on a calendar with follow-up support
+- Run multi-user with role-based access and an admin panel
+- Self-host everything with your data staying on your infrastructure
 
 ---
 
@@ -51,7 +37,7 @@ Your job search data stays on your server. No third-party tracking.
 - [Docker](https://docs.docker.com/get-docker/) & Docker Compose
 - That's it! Everything runs in containers.
 
-### 1. Clone & Configure
+### 1. Clone and Configure
 
 ```bash
 git clone https://github.com/robstave/worksearch.git
@@ -69,21 +55,21 @@ cp .env.example .env
 docker compose up -d
 ```
 
-### 3. Open & Login
+### 3. Open and Sign In
 
 | Service | URL |
 |---------|-----|
 | **Web App** | [http://localhost:5173](http://localhost:5173) |
 | **API** | [http://localhost:3000/api](http://localhost:3000/api) |
 
-**Default Credentials:**
+**Default credentials:**
 
 | User | Email | Password | Role |
 |------|-------|----------|------|
 | Admin | `admin@worksearch.local` | `admin123` | Full access + user management |
 | Demo | `demo@worksearch.local` | `demo123` | Standard user |
 
-> ⚠️ **Change these passwords** after first login!
+> ⚠️ Change these passwords after first login.
 
 ---
 
@@ -101,7 +87,7 @@ docker compose up -d
 ![List View](docs/images/ws2-list.png)
 
 ### Application Detail
-*Full job description with markdown support*
+*Job detail editing with markdown support*
 
 ![Application Form](docs/images/ws2-app.png)
 
@@ -134,10 +120,22 @@ stateDiagram-v2
     SCREENING --> GHOSTED
     SCREENING --> TRASH
     
+    INTERVIEW --> INTERVIEW_2
     INTERVIEW --> OFFER
     INTERVIEW --> REJECTED
     INTERVIEW --> GHOSTED
     INTERVIEW --> TRASH
+
+    INTERVIEW_2 --> INTERVIEW_3
+    INTERVIEW_2 --> OFFER
+    INTERVIEW_2 --> REJECTED
+    INTERVIEW_2 --> GHOSTED
+    INTERVIEW_2 --> TRASH
+
+    INTERVIEW_3 --> OFFER
+    INTERVIEW_3 --> REJECTED
+    INTERVIEW_3 --> GHOSTED
+    INTERVIEW_3 --> TRASH
     
     OFFER --> ACCEPTED
     OFFER --> DECLINED
@@ -194,7 +192,7 @@ worksearch/
 
 ## 🔧 Development
 
-### Running Locally (without Docker)
+### Running Locally (Without Docker)
 
 ```bash
 # API
@@ -224,9 +222,9 @@ docker compose exec api npm run db:seed
 docker compose exec api npx prisma studio
 ```
 
-### Backup & Restore
+### Backup and Restore
 
-**⚠️ Important:** Always backup before running migrations or resets!
+**⚠️ Important:** Always back up before running migrations or resets.
 
 ```bash
 # Create a backup
@@ -265,10 +263,10 @@ docker compose logs -f db    # Database logs
 - [x] Kanban board with drag-drop
 - [x] Multi-user with admin panel
 - [x] Analytics dashboard
-- [ ] Application notes/events timeline
+- [x] Application notes/events timeline
 - [ ] AI-powered company autofill
 - [ ] CSV import/export
-- [ ] Mobile-optimized views
+- [x] Mobile-optimized views
 - [ ] Browser extension for quick capture
 
 ---
@@ -293,8 +291,6 @@ This project is for personal use. See LICENSE file for details.
 
 <div align="center">
 
-**Built with ☕ and determination during the job search grind.**
-
-*Because spreadsheets are chaos and you deserve better.*
+Built for focused, consistent job-search execution.
 
 </div>

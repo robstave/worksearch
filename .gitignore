@@ -11,6 +11,11 @@ node_modules/
 !.env.sample
 !.env.template
 
+# Python virtual environments
+venv/
+.venv/
+env/
+
 # Build outputs
 dist/
 build/

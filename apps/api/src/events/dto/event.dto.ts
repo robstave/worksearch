@@ -16,14 +16,14 @@ export enum CalendarEventType {
 export class CreateEventDto {
   @IsString()
   @MinLength(1)
-  title: string;
+  title!: string;
 
   @IsOptional()
   @IsEnum(CalendarEventType)
   type?: CalendarEventType;
 
   @IsDateString()
-  scheduledAt: string;
+  scheduledAt!: string;
 
   @IsOptional()
   @IsString()

@@ -19,6 +19,7 @@ describe('AuthService', () => {
     email: 'test@example.com',
     passwordHash: '$2b$10$mockhashedpassword',
     role: 'user',
+    timezone: 'UTC',
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -26,6 +27,7 @@ describe('AuthService', () => {
   const mockPrismaService = {
     user: {
       findUnique: jest.fn(),
+      update: jest.fn(),
     },
   };
 
@@ -61,6 +63,7 @@ describe('AuthService', () => {
         id: mockUser.id,
         email: mockUser.email,
         role: mockUser.role,
+        timezone: mockUser.timezone,
         createdAt: mockUser.createdAt,
         updatedAt: mockUser.updatedAt,
       });
@@ -73,6 +76,8 @@ describe('AuthService', () => {
       await expect(
         service.validateUser({ email: 'nonexistent@example.com', password: 'password' }),
       ).rejects.toThrow(UnauthorizedException);
+
+      expect(bcrypt.compare).not.toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException when password is invalid', async () => {
@@ -95,6 +100,7 @@ describe('AuthService', () => {
         id: mockUser.id,
         email: mockUser.email,
         role: mockUser.role,
+        timezone: mockUser.timezone,
         createdAt: mockUser.createdAt,
         updatedAt: mockUser.updatedAt,
       });
@@ -107,6 +113,58 @@ describe('AuthService', () => {
       const result = await service.getUserById('nonexistent');
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('updateProfile', () => {
+    it('should throw UnauthorizedException when user does not exist', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(null);
+
+      await expect(service.updateProfile('missing-user', { timezone: 'UTC' })).rejects.toThrow(
+        UnauthorizedException,
+      );
+
+      expect(mockPrismaService.user.update).not.toHaveBeenCalled();
+    });
+
+    it('should update timezone and return user without password hash', async () => {
+      const updatedUser = {
+        ...mockUser,
+        timezone: 'America/New_York',
+      };
+
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaService.user.update.mockResolvedValue(updatedUser);
+
+      const result = await service.updateProfile('user-123', {
+        timezone: 'America/New_York',
+      });
+
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-123' },
+        data: { timezone: 'America/New_York' },
+      });
+      expect(result).toEqual({
+        id: updatedUser.id,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        timezone: updatedUser.timezone,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt,
+      });
+      expect(result).not.toHaveProperty('passwordHash');
+    });
+
+    it('should allow empty profile update payload', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaService.user.update.mockResolvedValue(mockUser);
+
+      await service.updateProfile('user-123', {});
+
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-123' },
+        data: {},
+      });
     });
   });
 });

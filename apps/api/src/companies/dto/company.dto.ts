@@ -9,7 +9,7 @@ import {
 export class CreateCompanyDto {
   @IsString()
   @MinLength(1)
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString()

@@ -8,6 +8,7 @@ import {
   Res,
   HttpCode,
   HttpStatus,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
@@ -26,9 +27,29 @@ export class AuthController {
     @Req() req: Request,
   ) {
     const user = await this.authService.validateUser(dto);
+
+    await new Promise<void>((resolve, reject) => {
+      req.session.regenerate((err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
+    });
     
     // Store user ID in session
     (req.session as any).userId = user.id;
+
+    await new Promise<void>((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
+    });
     
     return {
       id: user.id,
@@ -41,13 +62,23 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Req() req: Request, @Res() res: Response) {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Session destroy error:', err);
-      }
-    });
-    res.clearCookie('connect.sid');
-    res.send();
+    try {
+      await new Promise<void>((resolve, reject) => {
+        req.session.destroy((err) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        });
+      });
+
+      res.clearCookie('connect.sid');
+      res.status(HttpStatus.NO_CONTENT).send();
+      return;
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to logout');
+    }
   }
 
   @Get('me')

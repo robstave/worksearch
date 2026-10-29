@@ -2,7 +2,7 @@ import { IsString, IsOptional, IsUrl } from 'class-validator';
 
 export class CreateJobBoardDto {
   @IsString()
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString()

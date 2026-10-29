@@ -1,7 +1,7 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsOptional, IsTimeZone } from 'class-validator';
 
 export class UpdateProfileDto {
-  @IsString()
+  @IsTimeZone()
   @IsOptional()
   timezone?: string;
 }

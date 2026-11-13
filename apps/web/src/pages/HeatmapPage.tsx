@@ -210,7 +210,7 @@ export function HeatmapPage() {
                       return (
                         <div
                           key={di}
-                          className={`w-[11px] h-[11px] rounded-sm border cursor-pointer transition-all ${LEVEL_COLORS[level]} ${isToday ? 'ring-1 ring-blue-400' : ''} hover:ring-1 hover:ring-white`}
+                          className={`w-[11px] h-[11px] rounded-sm border cursor-pointer transition-colors transition-shadow ${LEVEL_COLORS[level]} ${isToday ? 'ring-1 ring-blue-400' : ''} hover:ring-1 hover:ring-white`}
                           onClick={() => {
                             if (day.count > 0) {
                               navigate(`/applications/list?appliedDate=${day.date}`);

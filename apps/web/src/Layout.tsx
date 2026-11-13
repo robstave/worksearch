@@ -253,7 +253,7 @@ export function Layout() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className={`w-9 h-9 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold text-sm hover:ring-2 hover:ring-offset-2 hover:ring-offset-gray-800 hover:ring-white transition-all`}
+                className={`w-9 h-9 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold text-sm hover:ring-2 hover:ring-offset-2 hover:ring-offset-gray-800 hover:ring-white transition-transform transition-colors active:scale-[0.96]`}
                 title={user.email}
               >
                 {avatarLetter}

@@ -215,7 +215,7 @@ export function ListPage() {
                         setAppliedDateFilter(isSelected ? '' : day.date);
                       }
                     }}
-                    className={`w-full rounded-t transition-all ${
+                    className={`w-full rounded-t transition-colors ${
                       day.count > 0 ? 'bg-blue-500 hover:bg-blue-400 cursor-pointer' : 'bg-gray-700'
                     } ${isToday ? 'ring-2 ring-blue-300' : ''} ${isSelected ? 'ring-2 ring-yellow-400' : ''}`}
                     style={{ height: `${heightPx}px` }}

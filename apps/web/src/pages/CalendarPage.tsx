@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { eventsApi } from '../api';
 import type { CalendarEvent, CalendarEventType } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';

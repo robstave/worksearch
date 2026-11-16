@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { applicationsApi } from '../api';
 import type { Application, AppState } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
+import { formatApplicationDate } from '@/lib/applicationDate';
 
 const STATE_COLORS: Record<AppState, string> = {
   INTERESTED: 'bg-blue-500',
@@ -266,7 +267,7 @@ export function ListPage() {
       {appliedDateFilter && (
         <div className="mb-4 p-3 bg-blue-900/50 border border-blue-500 rounded text-blue-300 flex items-center justify-between">
           <span>
-            Showing applications applied on {new Date(appliedDateFilter).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            Showing applications applied on {formatApplicationDate(appliedDateFilter, 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </span>
           <button
             onClick={() => setAppliedDateFilter('')}
@@ -390,7 +391,7 @@ export function ListPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-700 text-xs text-gray-400">
-                  <span>Applied: {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'}</span>
+                  <span>Applied: {app.appliedAt ? formatApplicationDate(app.appliedAt) : '—'}</span>
                   <span>Updated: {new Date(app.updatedAt).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -448,7 +449,7 @@ export function ListPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-left text-gray-400 text-sm">
-                      {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '—'}
+                      {app.appliedAt ? formatApplicationDate(app.appliedAt) : '—'}
                     </td>
                     <td className="px-4 py-3 text-left text-gray-400 text-sm">
                       {new Date(app.updatedAt).toLocaleDateString()}

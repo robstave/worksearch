@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Plot from 'react-plotly.js';
 import { applicationsApi } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
+import { formatApplicationDate } from '@/lib/applicationDate';
 
 const LOCATION_LABELS: Record<string, string> = {
   REMOTE: 'Remote',
@@ -178,7 +179,7 @@ export function DistributionPage() {
                     <td className="px-3 py-2 text-gray-200">{item.jobTitle}</td>
                     <td className="px-3 py-2 text-gray-300">
                       {item.appliedAt
-                        ? new Date(item.appliedAt).toLocaleDateString('en-US', {
+                        ? formatApplicationDate(item.appliedAt, 'en-US', {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',

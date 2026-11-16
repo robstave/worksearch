@@ -5,6 +5,7 @@ import { companiesApi, applicationsApi } from '../api';
 import type { CompanyDetail, CompanyVisit } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
+import { formatApplicationDate } from '@/lib/applicationDate';
 
 const FireIcon = ({ active }: { active: boolean }) => (
   <svg
@@ -386,7 +387,7 @@ export function CompanyPage() {
                       <span className="text-white font-medium">{app.jobTitle}</span>
                       {app.appliedAt && (
                         <span className="text-xs text-gray-400 ml-3">
-                          Applied: {new Date(app.appliedAt).toLocaleDateString()}
+                          Applied: {formatApplicationDate(app.appliedAt)}
                         </span>
                       )}
                     </div>

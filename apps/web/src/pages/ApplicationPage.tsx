@@ -6,6 +6,11 @@ import type { ApplicationDetail, AppState, WorkLocationType } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { CompanyTypeahead } from '@/components/CompanyTypeahead';
+import {
+  formatApplicationDate,
+  getApplicationDateValue,
+  getLocalDateValue,
+} from '@/lib/applicationDate';
 
 const STATE_COLORS: Record<AppState, string> = {
   INTERESTED: 'bg-blue-500',
@@ -57,11 +62,7 @@ export function ApplicationPage() {
   const [easyApply, setEasyApply] = useState(false);
   const [coverLetter, setCoverLetter] = useState(false);
   const [hot, setHot] = useState(false);
-  const [appliedAt, setAppliedAt] = useState(() => {
-    // Initialize appliedAt to today's date in YYYY-MM-DD format
-    const today = new Date();
-    return today.toISOString().slice(0, 10);
-  });
+  const [appliedAt, setAppliedAt] = useState(getLocalDateValue);
   const [description, setDescription] = useState('');
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
@@ -87,8 +88,7 @@ export function ApplicationPage() {
           setHot(app.hot || false);
           // Format appliedAt for date input (YYYY-MM-DD)
           if (app.appliedAt) {
-            const date = new Date(app.appliedAt);
-            setAppliedAt(date.toISOString().slice(0, 10));
+            setAppliedAt(getApplicationDateValue(app.appliedAt));
           }
           setDescription(app.jobDescriptionMd || '');
           setTags(app.tags);
@@ -344,7 +344,7 @@ export function ApplicationPage() {
                 </span>
                 {application.appliedAt && (
                   <span className="text-sm text-gray-400">
-                    Applied {new Date(application.appliedAt).toLocaleDateString()}
+                    Applied {formatApplicationDate(application.appliedAt)}
                   </span>
                 )}
               </div>

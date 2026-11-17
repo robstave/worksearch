@@ -31,7 +31,7 @@ const NAV_ITEMS = [
   { path: '/calendar', label: 'Calendar' },
   { path: '/analytics/heatmap', label: 'Analytics' },
   { path: '/companies', label: 'Companies' },
-  { path: '/job-boards', label: 'Job Boards' },
+  { path: '/resources', label: 'Resources' },
 ];
 
 // Icons
@@ -231,6 +231,8 @@ export function Layout() {
                 {NAV_ITEMS.map((item) => {
                   const isActive = item.path.startsWith('/analytics')
                     ? location.pathname.startsWith('/analytics')
+                    : item.path === '/resources'
+                    ? location.pathname === '/resources' || location.pathname.startsWith('/resources/') || location.pathname === '/job-boards' || location.pathname.startsWith('/job-boards/')
                     : location.pathname === item.path;
                   return (
                     <Link

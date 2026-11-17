@@ -1,80 +1,173 @@
-import { useState } from 'react';
-import { useAuth } from '../auth';
-
-interface NoteEntry {
-  id: string;
-  label: string;
-  value: string;
-}
-
-function initialEntries(): NoteEntry[] {
-  return [
-    { id: crypto.randomUUID(), label: 'GitHub link', value: '' },
-    { id: crypto.randomUUID(), label: 'LinkedIn link', value: '' },
-  ];
-}
-
-function NotesEditor({ storageKey }: { storageKey: string }) {
-  const [entries, setEntries] = useState<NoteEntry[]>(() => {
-    try {
-      const saved: unknown = JSON.parse(localStorage.getItem(storageKey) ?? 'null');
-      if (Array.isArray(saved) && saved.every((entry) =>
-        entry && typeof entry.id === 'string' && typeof entry.label === 'string' && typeof entry.value === 'string'
-      )) return saved;
-    } catch {
-      // Keep the editor usable when browser storage is unavailable.
-    }
-    return initialEntries();
-  });
-  const [status, setStatus] = useState('');
-
-  function updateEntries(next: NoteEntry[]) {
-    setEntries(next);
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(next));
-      setStatus('Saved in this browser');
-    } catch {
-      setStatus('Unable to save in this browser. Keep a copy before leaving this page.');
-    }
-  }
-
-  function updateEntry(id: string, field: 'label' | 'value', value: string) {
-    updateEntries(entries.map((entry) => entry.id === id ? { ...entry, [field]: value } : entry));
-  }
-
-  const inputClass = 'w-full rounded-md border border-gray-600 bg-gray-900 px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500';
-
-  return (
-    <section aria-labelledby="notes-heading">
-      <h2 id="notes-heading" className="text-2xl font-bold text-white mb-2">Notes</h2>
-      <p className="text-gray-400 mb-2">Keep links and reusable information here, ready to copy into applications.</p>
-      <p className="text-sm text-gray-500 mb-6">Saved automatically in this browser only. Notes do not sync across devices.</p>
-      <div className="max-w-3xl space-y-4">
-        {entries.map((entry) => (
-          <div key={entry.id} className="rounded-lg border border-gray-700 bg-gray-800 p-4">
-            <div className="flex items-end gap-3 mb-3">
-              <label className="flex-1 text-sm text-gray-300">
-                Label
-                <input className={`${inputClass} mt-1`} value={entry.label} placeholder="e.g. Portfolio link" onChange={(event) => updateEntry(entry.id, 'label', event.target.value)} />
-              </label>
-              <button type="button" className="rounded-md px-3 py-2 text-sm text-red-400 hover:bg-gray-700" aria-label={`Remove ${entry.label || 'note'}`} onClick={() => updateEntries(entries.filter((item) => item.id !== entry.id))}>Remove</button>
-            </div>
-            <label className="block text-sm text-gray-300">
-              Value
-              <textarea className={`${inputClass} mt-1 resize-y`} rows={3} value={entry.value} placeholder="Paste a link or any text here…" onChange={(event) => updateEntry(entry.id, 'value', event.target.value)} />
-            </label>
-          </div>
-        ))}
-        {entries.length === 0 && <p className="text-gray-400">No notes yet. Add an entry to get started.</p>}
-        <button type="button" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" onClick={() => updateEntries([...entries, { id: crypto.randomUUID(), label: '', value: '' }])}>+ Add entry</button>
-        <p role="status" className="text-sm text-gray-400">{status}</p>
-      </div>
-    </section>
-  );
-}
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { notesApi } from '../api';
+import type { Note } from '../api';
+import { LoadingScreen } from '@/components/ui/spinner';
 
 export function ResourceNotesPage() {
-  const { user } = useAuth();
-  const storageKey = `worksearch:resource-notes:${user!.id}`;
-  return <NotesEditor key={storageKey} storageKey={storageKey} />;
+  const navigate = useNavigate();
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [sortField, setSortField] = useState<'name' | 'updatedAt'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const loadNotes = async () => {
+    try {
+      const res = await notesApi.list({ search: search || undefined, sort: sortField, order: sortOrder });
+      setNotes(res.items);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load notes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadNotes();
+  }, [search, sortField, sortOrder]);
+
+  if (loading) {
+    return <LoadingScreen message="Loading notes..." />;
+  }
+
+  const handleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder(field === 'name' ? 'asc' : 'desc');
+    }
+  };
+
+  const SortHeader = ({ field, children, className = '' }: { field: typeof sortField; children: React.ReactNode; className?: string }) => (
+    <th
+      onClick={() => handleSort(field)}
+      className={`px-4 py-3 text-left text-sm font-medium text-gray-300 cursor-pointer hover:bg-gray-600 select-none ${className}`}
+    >
+      <span className="flex items-center gap-1">
+        {children}
+        {sortField === field && (
+          <span className="text-blue-400">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+        )}
+      </span>
+    </th>
+  );
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white">Notes</h1>
+        <Link
+          to="/resources/notes/new"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+        >
+          + Add Note
+        </Link>
+      </div>
+
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search notes..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded text-red-400">
+          {error}
+        </div>
+      )}
+
+      {notes.length === 0 ? (
+        <div className="text-center py-12 text-gray-400">
+          <p>No notes saved yet.</p>
+          <Link to="/resources/notes/new" className="mt-2 text-blue-400 hover:underline">
+            Add your first note
+          </Link>
+        </div>
+      ) : (
+        <>
+          {/* Mobile/Tablet Card Layout */}
+          <div className="lg:hidden space-y-3">
+            {/* Sort controls for mobile */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <select
+                value={`${sortField}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('-') as [typeof sortField, 'asc' | 'desc'];
+                  setSortField(field);
+                  setSortOrder(order);
+                }}
+                className="px-3 py-2 bg-gray-700 text-white rounded-md text-sm border border-gray-600"
+              >
+                <option value="name-asc">Name A-Z</option>
+                <option value="name-desc">Name Z-A</option>
+                <option value="updatedAt-desc">Recently Updated</option>
+                <option value="updatedAt-asc">Oldest Updated</option>
+              </select>
+            </div>
+
+            {notes.map((jb) => (
+              <div
+                key={jb.id}
+                onClick={() => navigate(`/resources/notes/${jb.id}`)}
+                className="bg-gray-800 rounded-lg p-4 border border-gray-700 cursor-pointer hover:border-gray-600 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-white font-medium block">{jb.name}</span>
+                    {jb.value && (
+                      <span className="text-gray-300 text-sm block truncate mt-1">{jb.value}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-700 text-xs text-gray-400">
+                  Updated: {new Date(jb.updatedAt).toLocaleDateString()}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table Layout */}
+          <div className="hidden lg:block bg-gray-800 rounded-lg overflow-hidden">
+            <table className="w-full table-fixed">
+              <thead className="bg-gray-700">
+                <tr>
+                  <SortHeader field="name" className="w-1/4">Name</SortHeader>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/2">Value</th>
+                  <SortHeader field="updatedAt" className="w-1/4">Updated</SortHeader>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {notes.map((jb) => (
+                  <tr
+                    key={jb.id}
+                    onClick={() => navigate(`/resources/notes/${jb.id}`)}
+                    className="hover:bg-gray-700 cursor-pointer"
+                  >
+                    <td className="px-4 py-3 text-left text-white font-medium">{jb.name}</td>
+                    <td className="px-4 py-3 text-left text-gray-300 truncate">
+                      {jb.value ? (
+                        <span>{jb.value}</span>
+                      ) : (
+                        <span className="text-gray-500">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-left text-gray-400 text-sm">
+                      {new Date(jb.updatedAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  );
 }

@@ -299,6 +299,32 @@ export const jobBoardsApi = {
   delete: (id: string) => request<void>(`/job-boards/${id}`, { method: 'DELETE' }),
 };
 
+export interface Note {
+  id: string;
+  name: string;
+  value: string | null;
+  notesMd: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const notesApi = {
+  list: (options?: { search?: string; sort?: 'name' | 'updatedAt'; order?: 'asc' | 'desc' }) => {
+    const params = new URLSearchParams();
+    if (options?.search) params.set('search', options.search);
+    if (options?.sort) params.set('sort', options.sort);
+    if (options?.order) params.set('order', options.order);
+    const query = params.toString();
+    return request<{ items: Note[] }>(`/notes${query ? `?${query}` : ''}`);
+  },
+  get: (id: string) => request<Note>(`/notes/${id}`),
+  create: (data: { name: string; value?: string; notesMd?: string }) =>
+    request<Note>('/notes', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: { name?: string; value?: string; notesMd?: string }) =>
+    request<Note>(`/notes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  delete: (id: string) => request<void>(`/notes/${id}`, { method: 'DELETE' }),
+};
+
 // Admin (requires admin role)
 export interface AdminUser {
   id: string;

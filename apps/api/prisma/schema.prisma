@@ -66,6 +66,7 @@ model User {
   companyTags     CompanyTag[]
   applicationTags ApplicationTag[]
   jobBoards       JobBoard[]
+  notes           Note[]
   events          Event[]
 }
 
@@ -97,6 +98,20 @@ model JobBoard {
   ownerId   String
   name      String
   link      String?
+  notesMd   String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  value      String?
   notesMd   String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

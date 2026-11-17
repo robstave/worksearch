@@ -12,6 +12,7 @@ import { ApplicationPage } from './pages/ApplicationPage';
 import { JobBoardsPage } from './pages/JobBoardsPage';
 import { JobBoardPage } from './pages/JobBoardPage';
 import { ResourcesLayout } from './pages/ResourcesLayout';
+import { ResourceNotePage } from './pages/ResourceNotePage';
 import { ResourceNotesPage } from './pages/ResourceNotesPage';
 import { ResumesPage } from './pages/ResumesPage';
 import { SankeyPage } from './pages/SankeyPage';
@@ -49,6 +50,7 @@ function App() {
                   <Route path="/resources" element={<Navigate to="/job-boards" replace />} />
                   <Route path="/resources/resumes" element={<ResumesPage />} />
                   <Route path="/resources/notes" element={<ResourceNotesPage />} />
+                  <Route path="/resources/notes/:id" element={<ResourceNotePage />} />
                   <Route path="/job-boards" element={<JobBoardsPage />} />
                   <Route path="/job-boards/:id" element={<JobBoardPage />} />
                 </Route>

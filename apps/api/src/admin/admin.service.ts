@@ -218,6 +218,7 @@ export class AdminService {
       this.prisma.application.deleteMany({ where: { ownerId: id } }),
       this.prisma.company.deleteMany({ where: { ownerId: id } }),
       this.prisma.jobBoard.deleteMany({ where: { ownerId: id } }),
+      this.prisma.note.deleteMany({ where: { ownerId: id } }),
       this.prisma.companyTag.deleteMany({ where: { ownerId: id } }),
       this.prisma.applicationTag.deleteMany({ where: { ownerId: id } }),
     ]);

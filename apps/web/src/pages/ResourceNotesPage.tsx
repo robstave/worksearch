@@ -4,6 +4,32 @@ import { notesApi } from '../api';
 import type { Note } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
 
+function CopyNoteValueButton({ value }: { value: string }) {
+  const [status, setStatus] = useState('');
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={async (event) => {
+          event.stopPropagation();
+          setStatus('');
+          try {
+            await navigator.clipboard.writeText(value);
+            setStatus('Copied');
+          } catch {
+            setStatus('Copy failed');
+          }
+        }}
+        className="whitespace-nowrap rounded-md border border-gray-600 px-2 py-1 text-sm text-blue-400 hover:bg-gray-600 hover:text-blue-300 focus-visible:outline-2 focus-visible:outline-blue-400 cursor-pointer"
+      >
+        Copy<span className="sr-only"> value to clipboard</span>
+      </button>
+      <span role="status" className="ml-2 text-xs text-gray-300">{status}</span>
+    </>
+  );
+}
+
 export function ResourceNotesPage() {
   const navigate = useNavigate();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -126,6 +152,11 @@ export function ResourceNotesPage() {
                     )}
                   </div>
                 </div>
+                {jb.value && (
+                  <div className="mt-2">
+                    <CopyNoteValueButton key={jb.value} value={jb.value} />
+                  </div>
+                )}
                 <div className="mt-3 pt-3 border-t border-gray-700 text-xs text-gray-400">
                   Updated: {new Date(jb.updatedAt).toLocaleDateString()}
                 </div>
@@ -139,8 +170,9 @@ export function ResourceNotesPage() {
               <thead className="bg-gray-700">
                 <tr>
                   <SortHeader field="name" className="w-1/4">Name</SortHeader>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/2">Value</th>
-                  <SortHeader field="updatedAt" className="w-1/4">Updated</SortHeader>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-[45%]">Value</th>
+                  <th className="px-4 py-3 w-[15%]"><span className="sr-only">Copy value</span></th>
+                  <SortHeader field="updatedAt" className="w-[15%]">Updated</SortHeader>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -157,6 +189,9 @@ export function ResourceNotesPage() {
                       ) : (
                         <span className="text-gray-500">—</span>
                       )}
+                    </td>
+                    <td className="px-4 py-3 text-left">
+                      {jb.value && <CopyNoteValueButton key={jb.value} value={jb.value} />}
                     </td>
                     <td className="px-4 py-3 text-left text-gray-400 text-sm">
                       {new Date(jb.updatedAt).toLocaleDateString()}

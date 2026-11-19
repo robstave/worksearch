@@ -1,8 +1,52 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import * as Dialog from '@radix-ui/react-dialog';
+import ReactMarkdown from 'react-markdown';
 import { jobBoardsApi } from '../api';
 import type { JobBoard } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
+
+function JobBoardNotes({ name, notes }: { name: string; notes: string }) {
+  if (!notes.trim()) {
+    return <span className="text-gray-500">—</span>;
+  }
+
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger
+        title={notes}
+        aria-label={`View notes for ${name}`}
+        onClick={(event) => event.stopPropagation()}
+        className="block w-full truncate rounded text-left text-sm text-gray-300 hover:text-white focus-visible:outline-2 focus-visible:outline-blue-400 cursor-pointer"
+      >
+        {notes}
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          onClick={(event) => event.stopPropagation()}
+          className="fixed inset-0 z-50 bg-black/60"
+        />
+        <Dialog.Content
+          aria-describedby={undefined}
+          onClick={(event) => event.stopPropagation()}
+          className="fixed top-1/2 left-1/2 z-50 flex max-h-[85vh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-lg border border-gray-700 bg-gray-800 p-5 text-left shadow-xl"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <Dialog.Title className="min-w-0 wrap-break-word font-semibold text-white">
+              Notes for {name}
+            </Dialog.Title>
+            <Dialog.Close className="shrink-0 text-sm text-blue-400 hover:text-blue-300 cursor-pointer">
+              Close
+            </Dialog.Close>
+          </div>
+          <div className="prose prose-invert prose-sm max-w-none overflow-auto wrap-break-word">
+            <ReactMarkdown>{notes}</ReactMarkdown>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
 
 export function JobBoardsPage() {
   const navigate = useNavigate();
@@ -132,6 +176,11 @@ export function JobBoardsPage() {
                         {jb.link.replace(/^https?:\/\//, '')}
                       </a>
                     )}
+                    {jb.notesMd?.trim() && (
+                      <div className="mt-2">
+                        <JobBoardNotes name={jb.name} notes={jb.notesMd} />
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="mt-3 pt-3 border-t border-gray-700 text-xs text-gray-400">
@@ -146,9 +195,10 @@ export function JobBoardsPage() {
             <table className="w-full table-fixed">
               <thead className="bg-gray-700">
                 <tr>
-                  <SortHeader field="name" className="w-1/4">Name</SortHeader>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-1/2">Link</th>
-                  <SortHeader field="updatedAt" className="w-1/4">Updated</SortHeader>
+                  <SortHeader field="name" className="w-[30%]">Name</SortHeader>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-[40%]">Link</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-300 w-[20%]">Notes</th>
+                  <SortHeader field="updatedAt" className="w-[10%]">Updated</SortHeader>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -173,6 +223,9 @@ export function JobBoardsPage() {
                       ) : (
                         <span className="text-gray-500">—</span>
                       )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <JobBoardNotes name={jb.name} notes={jb.notesMd ?? ''} />
                     </td>
                     <td className="px-4 py-3 text-left text-gray-400 text-sm">
                       {new Date(jb.updatedAt).toLocaleDateString()}

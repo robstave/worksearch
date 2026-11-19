@@ -11,6 +11,10 @@ import { CompanyPage } from './pages/CompanyPage';
 import { ApplicationPage } from './pages/ApplicationPage';
 import { JobBoardsPage } from './pages/JobBoardsPage';
 import { JobBoardPage } from './pages/JobBoardPage';
+import { ResourcesLayout } from './pages/ResourcesLayout';
+import { ResourceNotePage } from './pages/ResourceNotePage';
+import { ResourceNotesPage } from './pages/ResourceNotesPage';
+import { ResumesPage } from './pages/ResumesPage';
 import { SankeyPage } from './pages/SankeyPage';
 import { HeatmapPage } from './pages/HeatmapPage';
 import { SwimlanePage } from './pages/SwimlanePage';
@@ -42,8 +46,14 @@ function App() {
                 <Route path="/events/:id" element={<EventPage />} />
                 <Route path="/companies" element={<CompaniesPage />} />
                 <Route path="/companies/:id" element={<CompanyPage />} />
-                <Route path="/job-boards" element={<JobBoardsPage />} />
-                <Route path="/job-boards/:id" element={<JobBoardPage />} />
+                <Route element={<ResourcesLayout />}>
+                  <Route path="/resources" element={<Navigate to="/job-boards" replace />} />
+                  <Route path="/resources/resumes" element={<ResumesPage />} />
+                  <Route path="/resources/notes" element={<ResourceNotesPage />} />
+                  <Route path="/resources/notes/:id" element={<ResourceNotePage />} />
+                  <Route path="/job-boards" element={<JobBoardsPage />} />
+                  <Route path="/job-boards/:id" element={<JobBoardPage />} />
+                </Route>
                 <Route path="/admin/users" element={<AdminUsersPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />

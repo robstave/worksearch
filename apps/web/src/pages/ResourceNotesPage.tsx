@@ -4,6 +4,37 @@ import { notesApi } from '../api';
 import type { Note } from '../api';
 import { LoadingScreen } from '@/components/ui/spinner';
 
+async function copyNoteValue(value: string): Promise<boolean> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      // Try the selection-based copy if the Clipboard API rejects the write.
+    }
+  }
+
+  const focusedElement = document.activeElement;
+  const field = document.createElement('textarea');
+  field.value = value;
+  field.readOnly = true;
+  field.style.position = 'fixed';
+  field.style.opacity = '0';
+  document.body.append(field);
+
+  try {
+    field.select();
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    field.remove();
+    if (focusedElement instanceof HTMLElement) {
+      focusedElement.focus({ preventScroll: true });
+    }
+  }
+}
+
 function CopyNoteValueButton({ value }: { value: string }) {
   const [status, setStatus] = useState('');
 
@@ -14,12 +45,8 @@ function CopyNoteValueButton({ value }: { value: string }) {
         onClick={async (event) => {
           event.stopPropagation();
           setStatus('');
-          try {
-            await navigator.clipboard.writeText(value);
-            setStatus('Copied');
-          } catch {
-            setStatus('Copy failed');
-          }
+          const copied = await copyNoteValue(value);
+          setStatus(copied ? 'Copied' : 'Copy failed');
         }}
         className="whitespace-nowrap rounded-md border border-gray-600 px-2 py-1 text-sm text-blue-400 hover:bg-gray-600 hover:text-blue-300 focus-visible:outline-2 focus-visible:outline-blue-400 cursor-pointer"
       >

@@ -390,6 +390,9 @@ export function ListPage() {
                     {app.currentState}
                   </span>
                 </div>
+                {app.salaryRange && (
+                  <p className="mt-2 wrap-anywhere text-sm text-gray-300">Salary Range: {app.salaryRange}</p>
+                )}
                 <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-700 text-xs text-gray-400">
                   <span>Applied: {app.appliedAt ? formatApplicationDate(app.appliedAt) : '—'}</span>
                   <span>Updated: {new Date(app.updatedAt).toLocaleDateString()}</span>
@@ -404,12 +407,13 @@ export function ListPage() {
               <thead className="bg-gray-700">
                 <tr>
                   <SortHeader field="hot" className="w-10 px-2 text-center">🔥</SortHeader>
-                  <SortHeader field="company" className="w-1/6">Company</SortHeader>
-                  <SortHeader field="jobTitle" className="w-2/6">Job Title</SortHeader>
+                  <SortHeader field="company" className="w-[16%]">Company</SortHeader>
+                  <SortHeader field="jobTitle" className="w-[22%]">Job Title</SortHeader>
+                  <th scope="col" className="w-[15%] px-4 py-3 text-left text-sm font-medium text-gray-300">Salary Range</th>
                   <SortHeader field="workLocation" className="w-12">Loc</SortHeader>
-                  <SortHeader field="state" className="w-1/6">State</SortHeader>
-                  <SortHeader field="appliedAt" className="w-1/6">Applied</SortHeader>
-                  <SortHeader field="updatedAt" className="w-1/6">Updated</SortHeader>
+                  <SortHeader field="state" className="w-[14%]">State</SortHeader>
+                  <SortHeader field="appliedAt">Applied</SortHeader>
+                  <SortHeader field="updatedAt">Updated</SortHeader>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -438,6 +442,7 @@ export function ListPage() {
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-left text-gray-300 truncate">{app.jobTitle}</td>
+                    <td className="px-4 py-3 text-left text-sm text-gray-300 wrap-anywhere">{app.salaryRange || '—'}</td>
                     <td className="px-4 py-3 text-left">
                       <WorkLocationBadge location={app.workLocation} />
                     </td>

@@ -42,6 +42,17 @@ const ALLOWED_TRANSITIONS: Record<AppState, AppState[]> = {
   TRASH: [],
 };
 
+function getJobPostingHref(value: string) {
+  const url = value.trim();
+  const hasBareHostname = /^[^\s/:?#]+\.[^\s/:?#]+(?=[:/?#]|$)/.test(url);
+  try {
+    const parsed = new URL(hasBareHostname ? `https://${url}` : url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}
+
 export function ApplicationPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -58,6 +69,8 @@ export function ApplicationPage() {
   const [initialCompanyName, setInitialCompanyName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [jobReqUrl, setJobReqUrl] = useState('');
+  const [isJobReqUrlEditing, setIsJobReqUrlEditing] = useState(false);
+  const [salaryRange, setSalaryRange] = useState('');
   const [workLocation, setWorkLocation] = useState<WorkLocationType | ''>('HYBRID');
   const [easyApply, setEasyApply] = useState(false);
   const [coverLetter, setCoverLetter] = useState(false);
@@ -73,6 +86,9 @@ export function ApplicationPage() {
   const [editingTransitionDate, setEditingTransitionDate] = useState('');
   const [editingTransitionNote, setEditingTransitionNote] = useState('');
 
+  const savedJobReqUrl = isNew ? '' : (application?.jobReqUrl?.trim() ?? '');
+  const savedJobPostingHref = savedJobReqUrl ? getJobPostingHref(savedJobReqUrl) : null;
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -82,6 +98,8 @@ export function ApplicationPage() {
           setCompanyId(app.company.id);
           setJobTitle(app.jobTitle);
           setJobReqUrl(app.jobReqUrl || '');
+          setIsJobReqUrlEditing(false);
+          setSalaryRange(app.salaryRange ?? '');
           setWorkLocation(app.workLocation || '');
           setEasyApply(app.easyApply || false);
           setCoverLetter(app.coverLetter || false);
@@ -93,6 +111,9 @@ export function ApplicationPage() {
           setDescription(app.jobDescriptionMd || '');
           setTags(app.tags);
         } else if (isNew) {
+          setJobReqUrl('');
+          setIsJobReqUrlEditing(false);
+          setSalaryRange('');
           // Check if company was pre-filled from navigation state
           const state = location.state as { companyId?: string; companyName?: string } | null;
           if (state?.companyId) {
@@ -194,6 +215,15 @@ export function ApplicationPage() {
       return;
     }
 
+    const nextJobReqUrl = jobReqUrl.trim();
+    const jobReqUrlChanged = nextJobReqUrl !== savedJobReqUrl;
+    const jobPostingHref = nextJobReqUrl ? getJobPostingHref(nextJobReqUrl) : null;
+    const nextSalaryRange = salaryRange.trim() || null;
+    if (jobReqUrlChanged && nextJobReqUrl && !jobPostingHref) {
+      setError('Enter a valid job posting URL, such as https://example.com/jobs.');
+      return;
+    }
+
     setSaving(true);
     setError('');
 
@@ -207,7 +237,8 @@ export function ApplicationPage() {
         const newApp = await applicationsApi.create({
           companyId,
           jobTitle: jobTitle.trim(),
-          jobReqUrl: jobReqUrl.trim() || undefined,
+          jobReqUrl: jobPostingHref ?? undefined,
+          salaryRange: nextSalaryRange ?? undefined,
           workLocation: workLocation || undefined,
           easyApply,
           coverLetter,
@@ -222,7 +253,8 @@ export function ApplicationPage() {
       } else if (id) {
         await applicationsApi.update(id, {
           jobTitle: jobTitle.trim(),
-          jobReqUrl: jobReqUrl.trim() || undefined,
+          jobReqUrl: jobReqUrlChanged ? jobPostingHref : undefined,
+          salaryRange: nextSalaryRange === (application?.salaryRange ?? null) ? undefined : nextSalaryRange,
           workLocation: workLocation || undefined,
           easyApply,
           coverLetter,
@@ -237,6 +269,9 @@ export function ApplicationPage() {
           // Reload to reflect saved state
           const updated = await applicationsApi.get(id);
           setApplication(updated);
+          setJobReqUrl(updated.jobReqUrl ?? '');
+          setIsJobReqUrlEditing(false);
+          setSalaryRange(updated.salaryRange ?? '');
         }
       }
     } catch (err) {
@@ -352,16 +387,6 @@ export function ApplicationPage() {
           </div>
           {!isNew && application && (
             <div className="flex flex-col items-end gap-2">
-              {application.jobReqUrl && (
-                <a
-                  href={application.jobReqUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 text-sm"
-                >
-                  View Job Posting ↗
-                </a>
-              )}
               <Button
                 onClick={() => navigate('/events/new', {
                   state: {
@@ -427,15 +452,76 @@ export function ApplicationPage() {
 
           {/* Job URL */}
           <div>
-            <label className="block text-left text-sm font-medium text-gray-300 mb-1">
+            <div id="job-posting-url-label" className="text-left text-sm font-medium text-gray-300 mb-1">
               Job Posting URL
+            </div>
+            {savedJobReqUrl && !isJobReqUrlEditing ? (
+              <div className="flex items-start gap-3 text-left">
+                {savedJobPostingHref ? (
+                  <a
+                    href={savedJobPostingHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-w-0 wrap-anywhere text-blue-400 underline hover:text-blue-300"
+                  >
+                    {savedJobReqUrl}
+                  </a>
+                ) : (
+                  <span className="min-w-0 wrap-anywhere text-gray-300">{savedJobReqUrl}</span>
+                )}
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => {
+                    setJobReqUrl(savedJobReqUrl);
+                    setIsJobReqUrlEditing(true);
+                  }}
+                  className="shrink-0 text-sm text-blue-400 underline hover:text-blue-300"
+                >
+                  Edit link
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  inputMode="url"
+                  aria-labelledby="job-posting-url-label"
+                  autoFocus={isJobReqUrlEditing}
+                  disabled={saving}
+                  value={jobReqUrl}
+                  onChange={(e) => setJobReqUrl(e.target.value)}
+                  className="w-full min-w-0 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="https://..."
+                />
+                {isJobReqUrlEditing && savedJobReqUrl && (
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => {
+                      setJobReqUrl(savedJobReqUrl);
+                      setIsJobReqUrlEditing(false);
+                    }}
+                    className="shrink-0 text-sm text-gray-300 underline hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="salary-range" className="block text-left text-sm font-medium text-gray-300 mb-1">
+              Salary Range
             </label>
             <input
+              id="salary-range"
               type="text"
-              value={jobReqUrl}
-              onChange={(e) => setJobReqUrl(e.target.value)}
+              value={salaryRange}
+              onChange={(e) => setSalaryRange(e.target.value)}
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="https://..."
+              placeholder="e.g., $120k–$150k posted, asked for $145k"
             />
           </div>
 

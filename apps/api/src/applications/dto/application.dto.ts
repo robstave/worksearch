@@ -36,6 +36,10 @@ export class CreateApplicationDto {
 
   @IsOptional()
   @IsString()
+  salaryRange?: string;
+
+  @IsOptional()
+  @IsString()
   jobDescriptionMd?: string;
 
   @IsOptional()
@@ -67,7 +71,11 @@ export class UpdateApplicationDto {
 
   @IsOptional()
   @IsString()
-  jobReqUrl?: string;
+  jobReqUrl?: string | null;
+
+  @IsOptional()
+  @IsString()
+  salaryRange?: string | null;
 
   @IsOptional()
   @IsString()

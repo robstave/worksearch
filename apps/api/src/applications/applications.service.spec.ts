@@ -21,6 +21,7 @@ describe('ApplicationsService', () => {
     companyId: 'company-123',
     jobTitle: 'Software Engineer',
     jobReqUrl: 'https://example.com/job',
+    salaryRange: '$120k–$150k posted, asked for $145k',
     jobDescriptionMd: '# Job Description',
     tagsList: ['react', 'typescript'],
     currentState: 'INTERESTED',
@@ -84,6 +85,7 @@ describe('ApplicationsService', () => {
       expect(result.items).toHaveLength(1);
       expect(result.items[0].jobTitle).toBe('Software Engineer');
       expect(result.items[0].company.name).toBe('Test Company');
+      expect(result.items[0].salaryRange).toBe(mockApplication.salaryRange);
     });
 
     it('should filter by state', async () => {
@@ -147,6 +149,7 @@ describe('ApplicationsService', () => {
 
       expect(result.id).toBe('app-123');
       expect(result.jobTitle).toBe('Software Engineer');
+      expect(result.salaryRange).toBe(mockApplication.salaryRange);
     });
 
     it('should throw NotFoundException when application not found', async () => {
@@ -167,10 +170,16 @@ describe('ApplicationsService', () => {
         companyId: 'company-123',
         jobTitle: 'Software Engineer',
         jobReqUrl: 'https://example.com/job',
+        salaryRange: mockApplication.salaryRange,
       });
 
       expect(result.jobTitle).toBe('Software Engineer');
-      expect(mockPrismaService.application.create).toHaveBeenCalled();
+      expect(result.salaryRange).toBe(mockApplication.salaryRange);
+      expect(mockPrismaService.application.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ salaryRange: mockApplication.salaryRange }),
+        }),
+      );
     });
 
     it('should throw NotFoundException when company not found', async () => {
@@ -187,17 +196,40 @@ describe('ApplicationsService', () => {
 
   describe('update', () => {
     it('should update an existing application', async () => {
+      const salaryRange = 'Asked for $160k';
       mockPrismaService.application.findFirst.mockResolvedValue(mockApplication);
       mockPrismaService.application.update.mockResolvedValue({
         ...mockApplication,
         jobTitle: 'Senior Software Engineer',
+        salaryRange,
       });
 
       const result = await service.update('app-123', 'user-123', {
         jobTitle: 'Senior Software Engineer',
+        salaryRange,
       });
 
       expect(result.jobTitle).toBe('Senior Software Engineer');
+      expect(result.salaryRange).toBe(salaryRange);
+      expect(mockPrismaService.application.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ salaryRange }) }),
+      );
+    });
+
+    it('clears the posting URL and salary range when explicitly set to null', async () => {
+      const clearedFields = { jobReqUrl: null, salaryRange: null };
+      mockPrismaService.application.findFirst.mockResolvedValue(mockApplication);
+      mockPrismaService.application.update.mockResolvedValue({
+        ...mockApplication,
+        ...clearedFields,
+      });
+
+      const result = await service.update('app-123', 'user-123', clearedFields);
+
+      expect(result).toMatchObject(clearedFields);
+      expect(mockPrismaService.application.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: clearedFields }),
+      );
     });
 
     it('should throw NotFoundException when application not found', async () => {

@@ -160,7 +160,7 @@ export function JobBoardPage() {
           {/* Notes (Markdown) */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-left text-sm font-medium text-gray-300">
+              <label htmlFor={isNew || isNotesEditing ? 'job-board-notes' : undefined} className="block text-left text-sm font-medium text-gray-300">
                 Notes
               </label>
               {!isNew && (
@@ -175,6 +175,7 @@ export function JobBoardPage() {
             </div>
             {isNew || isNotesEditing ? (
               <textarea
+                id="job-board-notes"
                 value={notesMd}
                 onChange={(e) => setNotesMd(e.target.value)}
                 rows={12}

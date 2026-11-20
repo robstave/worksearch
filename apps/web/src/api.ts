@@ -135,6 +135,7 @@ export interface Application {
   company: { id: string; name: string };
   jobTitle: string;
   jobReqUrl: string | null;
+  salaryRange: string | null;
   currentState: AppState;
   workLocation: WorkLocationType | null;
   hot: boolean;
@@ -197,6 +198,7 @@ export const applicationsApi = {
     companyId: string;
     jobTitle: string;
     jobReqUrl?: string;
+    salaryRange?: string;
     jobDescriptionMd?: string;
     workLocation?: WorkLocationType;
     easyApply?: boolean;
@@ -204,7 +206,7 @@ export const applicationsApi = {
     initialState?: AppState;
     appliedAt?: string;
   }) => request<Application>('/applications', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType; easyApply?: boolean; coverLetter?: boolean; hot?: boolean; appliedAt?: string }) =>
+  update: (id: string, data: { jobTitle?: string; jobReqUrl?: string | null; salaryRange?: string | null; jobDescriptionMd?: string; tags?: string[]; workLocation?: WorkLocationType; easyApply?: boolean; coverLetter?: boolean; hot?: boolean; appliedAt?: string }) =>
     request<Application>(`/applications/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   move: (id: string, toState: AppState, options?: { note?: string; transitionedAt?: string }) =>
     request<{ applicationId: string; fromState: AppState; toState: AppState; transitionedAt: string }>(

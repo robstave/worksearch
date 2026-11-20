@@ -56,3 +56,4 @@ cheatcodes.md
 # Database backups
 backup-*.sql
 *.sql
+!apps/api/prisma/migrations/*/migration.sql

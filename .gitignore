@@ -41,6 +41,9 @@ yarn-error.log*
 # Testing
 coverage/
 
+# Temporary files
+cookies.txt
+
 # Docker
 *.local
 
